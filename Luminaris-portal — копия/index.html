@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMINARIS — Прогресс. Безопасность. Эволюция.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;500;700&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+  /* ===== LOGIN OVERLAY ===== */
+  #login-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #080a0c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #login-overlay.hidden {
+    pointer-events: none;
+    animation: overlayFadeOut 0.7s ease forwards;
+  }
+
+  @keyframes overlayFadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .login-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(180,190,210,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(180,190,210,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 75%);
+  }
+
+  .login-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .login-logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    color: rgba(232,236,244,0.9);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .login-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(90,96,112,0.8);
+    text-transform: uppercase;
+  }
+
+  /* THE CARD */
+  .id-card {
+    position: relative;
+    z-index: 2;
+    width: 340px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(60,180,100,0.25),
+      0 24px 64px rgba(0,0,0,0.7),
+      0 0 40px rgba(40,140,80,0.08);
+  }
+
+  .card-stripe {
+    background: #1a3d28;
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(60,180,100,0.2);
+    position: relative;
+  }
+
+  .card-stripe::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(60,180,100,0.04) 3px,
+      rgba(60,180,100,0.04) 4px
+    );
+    pointer-events: none;
+  }
+
+  .card-clearance {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .clearance-triangle {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid rgba(80,220,130,0.7);
+    filter: drop-shadow(0 0 4px rgba(80,220,130,0.4));
+  }
+
+  .clearance-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: rgba(80,220,130,0.85);
+    text-transform: uppercase;
+  }
+
+  .clearance-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(80,220,130,0.5);
+  }
+
+  .card-barcode-stripe {
+    background: #0f2018;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(60,180,100,0.12);
+  }
+
+  .barcode-svg {
+    flex: 1;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 1.5px;
+  }
+
+  .barcode-svg span {
+    display: inline-block;
+    background: rgba(80,200,120,0.5);
+    height: 100%;
+    border-radius: 0.5px;
+  }
+
+  .barcode-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    color: rgba(60,160,90,0.5);
+    white-space: nowrap;
+  }
+
+  .card-body-white {
+    background: #f4f6f2;
+    padding: 20px 18px 22px;
+  }
+
+  .card-employee-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    color: #6a7a6a;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-employee-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a2a1a;
+    letter-spacing: 0.03em;
+    margin-bottom: 16px;
+  }
+
+  .card-input-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: #7a8a7a;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .card-input {
+    width: 100%;
+    background: #e8ede6;
+    border: 1px solid #c8d4c4;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    color: #1a2a1a;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-align: center;
+  }
+
+  .card-input:focus {
+    border-color: #4a9a60;
+    box-shadow: 0 0 0 3px rgba(60,160,90,0.15);
+  }
+
+  .card-input.error {
+    border-color: #c04040;
+    box-shadow: 0 0 0 3px rgba(180,60,60,0.15);
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .card-submit {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    background: #1a3d28;
+    border: none;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(80,220,130,0.9);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .card-submit:hover {
+    background: #254d34;
+    color: rgba(100,240,150,1);
+  }
+
+  .card-submit:active { transform: scale(0.98); }
+
+  .card-error-msg {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #c04040;
+    text-align: center;
+    margin-top: 8px;
+    min-height: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card-error-msg.visible { opacity: 1; }
+
+  .card-bottom-strip {
+    background: #1a3d28;
+    padding: 6px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cbs-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: rgba(60,160,90,0.45);
+  }
+
+  .login-hint {
+    position: relative;
+    z-index: 2;
+    margin-top: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: rgba(90,96,112,0.6);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+
+  /* Экраны после авторизации */
+  .login-transition-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .login-transition-screen.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Счётчик попыток */
+  .card-attempts {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(180,80,80,0.85);
+    text-align: center;
+    margin-top: 6px;
+    min-height: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card-attempts.visible { opacity: 1; }
+
+  /* ДОСТУП АКТИВИРОВАН */
+  .screen-granted .screen-big {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(16px, 2.5vw, 28px);
+    letter-spacing: 0.35em;
+    color: #50dc82;
+    text-shadow: 0 0 24px rgba(80,220,130,0.5), 0 0 60px rgba(80,220,130,0.2);
+    text-transform: uppercase;
+    animation: grantedPop 0.6s ease forwards;
+  }
+  @keyframes grantedPop {
+    0% { opacity: 0; transform: scale(0.94); }
+    50% { opacity: 1; transform: scale(1.03); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ПРИВЕТСТВУЮ */
+  .screen-welcome .screen-greet {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.45em;
+    color: rgba(90,96,112,0.8);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    animation: wFade 0.7s ease 0.2s both;
+  }
+  .screen-welcome .screen-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(22px, 4vw, 44px);
+    letter-spacing: 0.15em;
+    color: rgba(232,236,244,0.95);
+    animation: wFade 0.9s ease 0.5s both;
+  }
+  @keyframes wFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ДОСТУП ЗАПРЕЩЁН */
+  #login-overlay.denied-state { background: #0d0404 !important; }
+  .screen-denied .screen-big-red {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(16px, 2.5vw, 28px);
+    letter-spacing: 0.35em;
+    color: #c84040;
+    text-shadow: 0 0 24px rgba(200,64,64,0.6), 0 0 60px rgba(200,64,64,0.25);
+    text-transform: uppercase;
+    animation: deniedFlash 0.4s ease forwards;
+    margin-bottom: 12px;
+  }
+  .screen-denied .screen-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: rgba(200,112,112,0.55);
+    text-transform: uppercase;
+    animation: wFade 0.5s ease 0.4s both;
+  }
+  @keyframes deniedFlash {
+    0%  { opacity: 0; }
+    20% { opacity: 1; }
+    40% { opacity: 0.15; }
+    55% { opacity: 1; }
+    70% { opacity: 0.35; }
+    85% { opacity: 1; }
+    100%{ opacity: 1; }
+  }
+
+  /* ===== END LOGIN ===== */
+
+  :root {
+    --bg: #0a0b0d;
+    --bg2: #0e1014;
+    --bg3: #131519;
+    --border: rgba(180,190,210,0.09);
+    --border2: rgba(180,190,210,0.18);
+    --text: #c8cdd8;
+    --text-dim: #5a6070;
+    --text-bright: #e8ecf4;
+    --accent: #4a7fa8;
+    --accent2: #2a5070;
+    --danger: #7a3030;
+    --danger-text: #c87070;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --techno: 'Share Tech Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.006) 2px,
+      rgba(255,255,255,0.006) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,11,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 56px;
+  }
+
+  .nav-logo {
+    font-family: var(--techno);
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    color: var(--text-bright);
+    text-transform: uppercase;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-logo::before {
+    content: '';
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    background: linear-gradient(135deg, transparent 40%, rgba(74,127,168,0.3) 100%);
+    position: relative;
+  }
+
+  .nav-logo::after {
+    content: 'ПОРТАЛ СОТРУДНИКА v2.4.1';
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    margin-left: 4px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-employee {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: rgba(80,220,130,0.75);
+    letter-spacing: 0.12em;
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-employee::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(80,220,130,0.7);
+  }
+
+  /* Кнопка "Профиль сотрудника" в навбаре */
+  #nav-profile-btn {
+    display: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border2);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+  #nav-profile-btn:hover {
+    color: var(--text-bright);
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* Prefix label before code input */
+  .card-input-prefix-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .card-input-prefix {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: #6a7a6a;
+    background: #dde4db;
+    border: 1px solid #c8d4c4;
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    padding: 10px 10px;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .card-input-prefix-row .card-input {
+    border-radius: 0 4px 4px 0;
+    text-align: left;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3a7a4a;
+    animation: pulse 3s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* MAIN CONTENT */
+  main {
+    position: relative;
+    z-index: 1;
+    padding-top: 56px;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 96px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+
+  /* SECTION TAGS */
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  .section-tag span {
+    color: var(--accent);
+  }
+
+  /* HERO */
+  #home {
+    min-height: calc(100vh - 56px);
+    display: flex;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 80%);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '//';
+    color: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 72px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  h1 em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .hero-tagline {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    margin-top: 24px;
+  }
+
+  .hero-body {
+    max-width: 540px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.8;
+    margin-bottom: 56px;
+  }
+
+  .hero-pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    border: 1px solid var(--border2);
+    max-width: 540px;
+    background: var(--border2);
+  }
+
+  .pillar {
+    background: var(--bg2);
+    padding: 20px 24px;
+  }
+
+  .pillar-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .pillar-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .hero-index {
+    position: absolute;
+    right: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 2;
+  }
+
+  .hero-index-item {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+
+  /* HEADINGS */
+  h2 {
+    font-size: clamp(28px, 3vw, 44px);
+    font-weight: 300;
+    color: var(--text-bright);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+  }
+
+  h2 strong {
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-bright);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+  }
+
+  p { margin-bottom: 20px; }
+
+  /* TWO-COL */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+
+  .two-col-wide {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .stat-box {
+    background: var(--bg2);
+    padding: 24px 28px;
+  }
+
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text-bright);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    border-left: 1px solid var(--border2);
+    margin-top: 40px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--accent2);
+    background: var(--bg);
+    transform: rotate(45deg);
+  }
+
+  .timeline-year {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .timeline-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  .card {
+    background: var(--bg2);
+    padding: 32px;
+  }
+
+  .card-icon {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+  }
+
+  .card-body {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* NOTICE BOX */
+  .notice {
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    padding: 20px 24px;
+    margin: 32px 0;
+    position: relative;
+  }
+
+  .notice::before {
+    content: 'УВЕДОМЛЕНИЕ';
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    position: absolute;
+    top: -1px;
+    left: 16px;
+    background: var(--bg3);
+    padding: 0 8px;
+    transform: translateY(-50%);
+  }
+
+  .notice p { margin-bottom: 8px; font-size: 14px; }
+  .notice p:last-child { margin-bottom: 0; }
+
+  /* WARNING BOX */
+  .warning-box {
+    border: 1px solid rgba(122,48,48,0.5);
+    background: rgba(122,48,48,0.06);
+    padding: 20px 24px;
+    margin: 32px 0;
+    position: relative;
+  }
+
+  .warning-box::before {
+    content: 'КЛАСС УГРОЗЫ: ОГРАНИЧЕННЫЙ ДОСТУП';
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--danger-text);
+    position: absolute;
+    top: -1px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    transform: translateY(-50%);
+  }
+
+  .warning-box p { margin-bottom: 8px; font-size: 14px; color: var(--text); }
+  .warning-box p:last-child { margin-bottom: 0; }
+
+  /* ARCHIVE DOCS */
+  .doc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  .doc-item {
+    background: var(--bg2);
+    padding: 0;
+    display: grid;
+    grid-template-columns: 180px 1fr 120px;
+  }
+
+  .doc-meta {
+    padding: 20px 24px;
+    border-right: 1px solid var(--border);
+  }
+
+  .doc-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .doc-date {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .doc-body {
+    padding: 20px 28px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .doc-status {
+    padding: 20px 24px;
+    border-left: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .doc-status span {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border: 1px solid;
+  }
+
+  .status-archived { color: var(--text-dim); border-color: var(--border2); }
+  .status-classified { color: var(--danger-text); border-color: rgba(122,48,48,0.4); }
+  .status-corrupt { color: #7a6030; border-color: rgba(122,96,48,0.4); }
+
+  /* CORRUPTED TEXT */
+  .corrupt {
+    font-family: var(--mono);
+    color: var(--text-dim);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+
+  /* ECHO SECTION */
+  #echo {
+    background: var(--bg);
+    position: relative;
+  }
+
+  #echo::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(122,48,48,0.4), transparent);
+  }
+
+  .echo-warning-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--danger-text);
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0.8;
+  }
+
+  .echo-warning-header::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: rgba(122,48,48,0.5);
+  }
+
+  .echo-body {
+    max-width: 680px;
+  }
+
+  .echo-body p { color: var(--text); margin-bottom: 24px; }
+
+  .echo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(122,48,48,0.15);
+    border: 1px solid rgba(122,48,48,0.2);
+    margin-top: 48px;
+  }
+
+  .echo-cell {
+    background: rgba(10,8,8,0.98);
+    padding: 24px 20px;
+  }
+
+  .echo-cell-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(200,112,112,0.5);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .echo-cell-text {
+    font-size: 13px;
+    color: rgba(200,205,216,0.65);
+    line-height: 1.65;
+  }
+
+  .echo-footnote {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(122,48,48,0.15);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.9;
+  }
+
+  /* CREACION */
+  .creacion-header {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 64px;
+    margin-bottom: 64px;
+  }
+
+  .creacion-stat-panel {
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    padding: 28px;
+    align-self: start;
+  }
+
+  .creacion-stat-panel h3 {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    margin-bottom: 24px;
+    color: var(--text-dim);
+  }
+
+  .creacion-stat {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .creacion-stat:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .cs-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .cs-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 48px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-brand {
+    font-family: var(--techno);
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+  }
+
+  .footer-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  .footer-bottom {
+    padding: 20px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-bottom span {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .classification-bar {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(122,48,48,0.5);
+    text-transform: uppercase;
+  }
+
+  /* DIVIDER */
+  .hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* SUBTLE HIGHLIGHT */
+  .hl {
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+
+  /* MONO INLINE */
+  .mono {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .glitch {
+    font-family: var(--mono);
+    color: rgba(180,150,80,0.5);
+    font-size: 11px;
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ACCESS LEVELS */
+  .access-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 32px;
+  }
+
+  .access-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .access-table td {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .access-table tr:last-child td { border-bottom: none; }
+
+  .level-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .l1 { border: 1px solid rgba(60,120,80,0.4); color: #5a9a6a; }
+  .l2 { border: 1px solid rgba(74,127,168,0.4); color: var(--accent); }
+  .l3 { border: 1px solid rgba(140,100,60,0.4); color: #b08060; }
+  .l4 { border: 1px solid rgba(122,48,48,0.5); color: var(--danger-text); }
+  .l5 { border: 1px solid rgba(180,180,180,0.3); color: rgba(200,205,216,0.4); }
+
+  /* ISKRA SECTION */
+  .iskra-diagram {
+    margin: 48px 0;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    padding: 32px;
+    position: relative;
+  }
+
+  .iskra-diagram::before {
+    content: 'СХЕМА ПРИМЕНЕНИЯ — ИСКРА';
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    position: absolute;
+    top: -1px;
+    left: 16px;
+    background: var(--bg2);
+    padding: 0 8px;
+    transform: translateY(-50%);
+  }
+
+  .iskra-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .iskra-cell {
+    background: var(--bg3);
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .iskra-cell-icon {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0;
+  }
+
+  .iskra-cell-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .iskra-cell-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .iskra-footnote {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  /* SCROLL FADE IN */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* CREACION WARNING STRIPE */
+  .stripe-warning {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: rgba(122,48,48,0.35);
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 6px 0;
+    margin: 32px 0;
+    border-top: 1px solid rgba(122,48,48,0.1);
+    border-bottom: 1px solid rgba(122,48,48,0.1);
+  }
+
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a href="#home" class="nav-logo">LUMINARIS</a>
+  <ul class="nav-links">
+    <li><a href="#home">Главная</a></li>
+    <li><a href="#about">О корпорации</a></li>
+    <li><a href="#iskra">Искры</a></li>
+    <li><a href="#creacion">Креацион</a></li>
+    <li><a href="#archive">Архив</a></li>
+    <li><a href="#echo">Эхо</a></li>
+  </ul>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    Системы номинальны
+  </div>
+  <div class="nav-employee" id="nav-employee-name"></div>
+  <button id="nav-profile-btn" onclick="goToProfile()">↗ Профиль сотрудника</button>
+</nav>
+
+<main>
+
+<!-- ===== HERO / HOME ===== -->
+<section id="home">
+  <div class="hero-grid"></div>
+  <div class="container">
+
+    <div class="hero-content fade-in visible">
+      <div class="hero-eyebrow">Официальный корпоративный портал — доступ разрешён</div>
+      <h1><em>Luminaris</em><br>Мегакорпорация<br>нового мира</h1>
+      <div class="hero-tagline">Прогресс · Безопасность · Эволюция</div>
+      <p class="hero-body">
+        Корпорация «Люминарис» является ведущей технологической организацией эпохи ██████████. Мы формируем будущее человечества через развитие технологий Искры, обеспечение структурной безопасности и создание устойчивой инфраструктуры для нового цивилизационного цикла. Наши обязательства перед сотрудниками, партнёрами и миром — незыблемы.
+      </p>
+      <div class="hero-pillars">
+        <div class="pillar">
+          <div class="pillar-num">01</div>
+          <div class="pillar-title">Прогресс</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">02</div>
+          <div class="pillar-title">Безопасность</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-num">03</div>
+          <div class="pillar-title">Эволюция</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-index">
+    <span class="hero-index-item">Аркалис · Новый период</span>
+    <span class="hero-index-item">Портал 2.4.1</span>
+  </div>
+</section>
+
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="container">
+    <div class="section-tag"><span>00 — 01</span> / О корпорации</div>
+    <div class="two-col-wide fade-in">
+      <div>
+        <h2>Корпорация, <strong>основавшая эпоху</strong></h2>
+        <p>«Люминарис» была основана как ответ на глобальный умственный кризис столетия. Сочетая инженерную точность с амбицией изменить природу человеческого потенциала, корпорация в течение трёх десятилетий стала доминирующей экономической структурой известного мира.</p>
+        <p>К моменту первого промышленного цикла «Люминарис» контролировала производство ресурсов Искры на <span class="hl">восьми из одиннадцати промышленных областей</span>, обеспечивала инфраструктуру для более чем 340 партнёрских образований и напрямую занимала позиции в 78% ключевых секторов глобальной экономики.</p>
+        <p>Сегодня, в условиях нестабильности нового периода, «Люминарис» остаётся единственной структурой, способной обеспечить системное восстановление цивилизации. Наши объекты, архивы и специалисты — фундамент, на котором будет построен следующий мир.</p>
+
+        <div class="hr"></div>
+
+        <h3>Уровни допуска персонала</h3>
+        <p style="font-size:13px; color:var(--text-dim);">Все сотрудники «Люминарис» классифицированы по внутренней системе допуска в соответствии с Регламентом безопасности R-8. Доступ к информации, объектам и технологиям Искры определяется уровнем допуска.</p>
+        <table class="access-table">
+          <thead>
+            <tr>
+              <th>Уровень</th>
+              <th>Обозначение</th>
+              <th>Сфера доступа</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="level-badge l1">ΔΑ — 01</span></td>
+              <td>Ориентационный</td>
+              <td>Общедоступные архивы, внешние коммуникации (Рации-Во)</td>
+            </tr>
+            <tr>
+              <td><span class="level-badge l2">ΔΒ — 02</span></td>
+              <td>Операционный</td>
+              <td>Производственные узлы, дополнительная информация о сотрудниках</td>
+            </tr>
+            <tr>
+              <td><span class="level-badge l3">ΔC — 03</span></td>
+              <td>Аналитический</td>
+              <td>Внутренние отчёты, исследовательские протоколы,зашифрованые документы</td>
+            </tr>
+            <tr>
+              <td><span class="level-badge l4">ΔΔE— 04</span></td>
+              <td>Критический</td>
+              <td>Проект «Креацион», документация об Эхо,Искры класса Σ, засекреченые документы</td>
+            </tr>
+            <tr>
+              <td><span class="level-badge l5">ΔΩ — ——</span></td>
+              <td><span style="opacity:0.4">Исполнительный</span></td>
+              <td><span class="redacted">чернорабочие выполняющие простую работу,бухгалтеры,медики и просто узкие специалисты</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="stats-row" style="grid-template-columns: 1fr 1fr; margin-top: 0; margin-bottom: 0;">
+          <div class="stat-box">
+            <div class="stat-num">78%</div>
+            <div class="stat-label">Контроль<br>глобального<br>рынка ресурсов</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">340+</div>
+            <div class="stat-label">Партнёрских<br>образований<br>в системе</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">8</div>
+            <div class="stat-label">Промышленных<br>областей<br>присутствия</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num"><span style="font-size:16px; color:var(--text-dim);">≈</span>4.2M</div>
+            <div class="stat-label">Сотрудников<br>в активных<br>реестрах</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-year">ОСНОВАНИЕ · DOC-0001</div>
+            <div class="timeline-text">Учреждение «Люминарис» как объединённого консорциума технологических и промышленных образований. Первичная идея предусматривала объеденение и «устойчивое развитие человеческого потенциала через технологию».</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">ПЕРИОД РОСТА · DOC-0087</div>
+            <div class="timeline-text">Завершение первого промышленного цикла. Внедрение технологии Искры на территории всего континетка. Корпорация становится крупнейшим работодателем известного мира.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">ПРОЕКТ КРЕАЦИОН · DOC-0244</div>
+            <div class="timeline-text">Запуск программы сохранения человеческого ресурса в условиях нарастающей нестабильности. Первый контингент сотрудников помещён в криосон согласно Протоколу Δ-9.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">НОВЫЙ ПЕРИОД · <span class="corrupt">SYS://ERR 0x4f2</span></div>
+            <div class="timeline-text">Реактивация капсул криосна согласно <span class="redacted">██████████████</span>. Текущая фаза восстановления. Нестабильность Эхо — <s>контролируемая</s>
+.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== ISKRA ===== -->
+<section id="iskra">
+  <div class="container">
+    <div class="section-tag"><span>00 — 02</span> / Проект «Искры»</div>
+    <div class="fade-in">
+      <h2>Технология, <strong>изменившая<br>природу развития</strong></h2>
+      <p>Искры — это универсальный синтетический ресурс, разработанный исследовательскими лабораториями «Люминарис» в ходе третьей программы глубинных технологий. Они представляют собой устойчивые информационно-энергетические конструкты, способные взаимодействовать с биологическими и магическими системами носителя.</p>
+      <p>Искры не являются простым усилителем. Это инструмент <span class="hl">ускоренного обучения</span>, <span class="hl">усиления природных способностей</span> и <span class="hl">базис для промышленных технологий</span> нового поколения. Их применение охватывает медицину, производство, оборону и образование, так-же способен в полной мере лечить психические недуги!</p>
+
+      <div class="iskra-diagram">
+        <div class="iskra-row">
+          <div class="iskra-cell">
+            <div class="iskra-cell-icon">◈</div>
+            <div class="iskra-cell-title">Обучение</div>
+            <div class="iskra-cell-desc">Ускорение усвоения навыков. Сокращение учебного цикла до 70%.</div>
+          </div>
+          <div class="iskra-cell">
+            <div class="iskra-cell-icon">◇</div>
+            <div class="iskra-cell-title">Усиление</div>
+            <div class="iskra-cell-desc">Интеграция с биологическими системами. Расширение физических и ментальных характеристик.</div>
+          </div>
+          <div class="iskra-cell">
+            <div class="iskra-cell-icon">◉</div>
+            <div class="iskra-cell-title">Промышленность</div>
+            <div class="iskra-cell-desc">Энергетический субстрат для производственных циклов и инфраструктуры.</div>
+          </div>
+          <div class="iskra-cell">
+            <div class="iskra-cell-icon">◌</div>
+            <div class="iskra-cell-title">Исследования</div>
+            <div class="iskra-cell-desc">Взаимодействие с манопотоками. Изучение природных и синтетических систем.</div>
+          </div>
+        </div>
+        <div class="iskra-footnote">
+          Все Искры классифицируются по Реестру Δ-3. Доступ к Искрам класса Σ и выше требует допуска ΔΔE-04. 
+          Применение вне регламентированных протоколов — <span style="color:var(--danger-text)">нарушение Устава безопасности, статья 14(b)</span>.
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top: 48px;">
+        <div>
+          <h3>Классификация ресурса</h3>
+          <p style="font-size:14px;">Искры делятся на три основных класса: стандартные (ΔΑ — ΔΒ, ,безопастные к использованию "yellow/purple"), расширенные (ΔC, не до конца изучен трагический формфактор "green") и критические (ΔΣ, сильные но совершенно неконтролируемые "red"). Стандартные Искры доступны сотрудникам операционного уровня. Расширенные и критические — строго регламентированы.</p>
+          <p style="font-size:14px;">Синтез Искр производится на защищённых объектах «Люминарис». Несанкционированное производство является нарушением Хартии и влечёт меры по <span class="redacted">████████████</span>.</p>
+        </div>
+        <div>
+          <div class="notice">
+            <p><strong style="color:var(--text-bright)">Побочные эффекты при использовании.</strong> В редких случаях применение Искр класса ΔC и выше может сопровождаться нежелательными явлениями. Сотрудники обязаны сообщать о любых изменениях восприятия, слуховых или визуальных аберрациях, а также нарушениях работы с манопотоками в Медицинский отдел не позднее 48 часов с момента появления симптомов.</p>
+            <p style="color:var(--text-dim); font-family:var(--mono); font-size:11px;">Протокол MED-07 · Приложение 3-С · Уровень мониторинга: отсутствует</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== CREACION ===== -->
+<section id="creacion">
+  <div class="container">
+    <div class="section-tag"><span>00 — 03</span> / Проект «Креацион»</div>
+    <div class="fade-in">
+
+      <div class="creacion-header">
+        <div>
+          <h2>Сохранение <strong>человеческого<br>капитала</strong> для нового цикла</h2>
+          <p>Проект «Креацион» — это программа долгосрочной консервации ключевого персонала «Люминарис» в условиях прогнозируемой глобальной нестабильности. Разработанный в рамках Протокола Δ-9, «Креацион» обеспечивает сохранность профессиональной компетенции, биологической целостности и психологического профиля каждого участника.</p>
+          <p>Технология криосна «Люминарис» прошла верификацию в ходе <span class="hl">семи независимых аудитов безопасности</span>. Процедура включает полное биологическое замедление с поддержкой нейронной матрицы, обеспечивая участнику субъективно безвременной переход к моменту активации.</p>
+          <p>Гарантированное пробуждение предусмотрено по достижении <span class="hl">стабилизационного порога</span> глобальных условий — не позднее 100-летнего цикла с момента консервации.</p>
+        </div>
+        <div class="creacion-stat-panel">
+          <h3>Параметры программы</h3>
+          <div class="creacion-stat">
+            <div class="cs-num">100</div>
+            <div class="cs-label">Лет — плановый<br>период консервации</div>
+          </div>
+          <div class="creacion-stat">
+            <div class="cs-num">99.7%</div>
+            <div class="cs-label">Биологическая<br>целостность (расч.)</div>
+          </div>
+          <div class="creacion-stat">
+            <div class="cs-num"><span style="font-size:16px">≈</span>14K</div>
+            <div class="cs-label">Капсул в<br>активных реестрах</div>
+          </div>
+          <div class="creacion-stat">
+            <div class="cs-num" style="color:var(--text-dim); font-size: 14px;">ΔАКТИВ</div>
+            <div class="cs-label">Текущий статус<br>программы</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">ФАЗА 01 — ОТБОР</div>
+          <div class="card-title">Критерии участия в программе</div>
+          <div class="card-body">Участие в «Креацион» предоставляется сотрудникам уровней ΔA-01 и выше на основании профессиональной оценки, психологического скрининга и медицинской верификации. Приоритет отдаётся носителям критических компетенций, специалистам в области Искр и ключевому управленческому персоналу.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">ФАЗА 02 — КОНСЕРВАЦИЯ</div>
+          <div class="card-title">Технология криогенного замедления</div>
+          <div class="card-body">Процедура консервации занимает 72 часа и проводится исключительно на сертифицированных объектах «Люминарис». Капсулы серии CRY-IV оборудованы автономным энергетическим модулем с расчётным ресурсом не менее 120 лет и системой тройного резервирования.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">ФАЗА 03 — МОНИТОРИНГ</div>
+          <div class="card-title">Надзор в период консервации</div>
+          <div class="card-body">Все капсулы находятся под непрерывным мониторингом систем ИИ класса «ARGO». Биологические показатели записываются каждые 6 часов.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">ФАЗА 04 — АКТИВАЦИЯ</div>
+          <div class="card-title">Протокол пробуждения и реадаптации</div>
+          <div class="card-body">Пробуждение инициируется по достижении <span class="redacted">████████████████</span>. Реадаптационный период составляет от 14 до 30 суток. Каждому участнику предоставляется полный пакет ориентационных материалов, включая актуальный статус мира и новые регламенты корпорации.</div>
+        </div>
+      </div>
+
+      <div class="stripe-warning">
+        ВНИМАНИЕ · КЛАСС Δ-09 · ТОЛЬКО ДЛЯ УЧАСТНИКОВ ПРОГРАММЫ · ВНИМАНИЕ · КЛАСС Δ-09 · ТОЛЬКО ДЛЯ УЧАСТНИКОВ ПРОГРАММЫ · ВНИМАНИЕ · КЛАСС Δ-09 · ТОЛЬКО ДЛЯ УЧАСТНИКОВ ПРОГРАММЫ · ВНИМАНИЕ · КЛАСС Δ-09 ·
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== ARCHIVE ===== -->
+<section id="archive">
+  <div class="container">
+    <div class="section-tag"><span>00 — 04</span> / Архивные документы</div>
+    <div class="fade-in">
+      <h2>Открытый <strong>архив документации</strong></h2>
+      <p style="max-width:580px;">Следующие документы доступны в соответствии с уровнем допуска ΔΑ-01 и ΔΒ-02. Полный архив «Люминарис» насчитывает более 840 000 записей, часть из которых находится в процессе верификации или восстановления.</p>
+
+      <div class="doc-grid">
+
+        <!-- DOC 1 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">MED-REP-0441</div>
+            <div class="doc-date">Отдел медицины<br>Период: Ранний</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">ОТЧЁТ О СТАБИЛЬНОСТИ ИСКР — ПРОИЗВОДСТВЕННЫЙ ЦИКЛ 7</strong><br><br>
+            Параметры стабильности Искр класса ΔΒ остаются в норме по всем 11 объектам. Зафиксировано незначительное увеличение индекса распада в секторах E-7 и F-12, интерпретируемое как функциональный шум. Рекомендуется плановая диагностика в течение стандартного цикла. Особых опасений не выявлено.<br><br>
+            <span class="glitch">[ПРИМЕЧАНИЕ, ДОБАВЛЕНО ПОЗЖЕ] — индекс распада сектора F-12 к моменту составления данного отчёта уже превышал допустимый порог на 340%. Параметры были скорректированы вручную перед публикацией. — автор: <span class="redacted">████████████</span>]</span>
+          </div>
+          <div class="doc-status"><span class="status-corrupt">ИЗМЕНЁН</span></div>
+        </div>
+
+        <!-- DOC 2 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">INT-NOTE-1882</div>
+            <div class="doc-date">Административный<br>отдел</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">ВНУТРЕННЯЯ ЗАПИСКА — ПЕРСОНАЛУ УРОВНЯ ΔΒ</strong><br><br>
+            Уважаемые коллеги. Начиная с текущей недели доступ в секторы G-4 — G-9 будет временно ограничен в связи с «плановыми регламентными работами». Ожидаемое время восстановления — от 2 до 5 рабочих дней. Просьба воздерживаться от расспросов о характере проводимых работ во избежание создания ненужной тревоги. Всё под контролем.
+          </div>
+          <div class="doc-status"><span class="status-archived">АРХИВ</span></div>
+        </div>
+
+        <!-- DOC 3 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">SCI-RPT-0093</div>
+            <div class="doc-date">Научный отдел<br>Сект. Аномалий</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ — АНОМАЛЬНЫЙ ПОБОЧНЫЙ ЭФФЕКТ «ЭХО»</strong><br><br>
+            В ходе углублённого анализа последствий производственного цикла 7 выявлен аномальный побочный продукт взаимодействия технологий Искры с мировой средой. Рабочее обозначение явления — «Эхо». Зафиксировано негативное воздействие на манопотоки в зонах интенсивного применения. Ранние данные о влиянии на биологические системы носителей <span class="corrupt">█████████████████████████████</span> требуют дополнительной верификации. Отчёт передан в отдел безопасности.
+          </div>
+          <div class="doc-status"><span class="status-classified">СЕКРЕТНО</span></div>
+        </div>
+
+        <!-- DOC 4 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">CREAT-UPDT-007</div>
+            <div class="doc-date">Проект «Креацион»<br>Штаб активации</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">ОБНОВЛЕНИЕ СТАТУСА КАПСУЛ — ОБЪЕКТ <span class="redacted">██████</span></strong><br><br>
+            Из 845 капсул на объекте 839 функционируют номинально. 6 капсул переведены в режим <span class="redacted">████████</span> в связи с <span class="corrupt">SYS:WARN — INTEGRITY 0.44 — рекомендуется диагностика</span>. Потери биоматериала зафиксированы в <span class="corrupt">ERR:RECORD CORRUPT — восстановление невозможно</span>. Руководство уведомлено. Дальнейших действий не требуется.
+          </div>
+          <div class="doc-status"><span class="status-corrupt">ПОВРЕЖДЁН</span></div>
+        </div>
+
+        <!-- DOC 5 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">PSYCH-REP-2241</div>
+            <div class="doc-date">Психологический<br>мониторинг</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">СВОДНЫЙ ПСИХОЛОГИЧЕСКИЙ ОТЧЁТ — ПЕРСОНАЛ ΔΓ-03 И ВЫШЕ</strong><br><br>
+            Среди специалистов, работавших с Искрами класса ΔΓ более 18 месяцев, выявлен ряд повторяющихся симптомов: нарушения сна, аберрации восприятия пространства, непроизвольные когнитивные разрывы. В 14% случаев сотрудники сообщают о «нечёткости воспоминаний». Рекомендуется ежеквартальный психологический скрининг. Вопрос о возможной связи с явлением Эхо передан в отдел безопасности.
+          </div>
+          <div class="doc-status"><span class="status-archived">АРХИВ</span></div>
+        </div>
+
+        <!-- DOC 6 -->
+        <div class="doc-item">
+          <div class="doc-meta">
+            <div class="doc-id">EXEC-COM-0001</div>
+            <div class="doc-date">Исполнительный<br>совет</div>
+          </div>
+          <div class="doc-body">
+            <strong style="color:var(--text-bright); font-size:12px; font-family:var(--mono); letter-spacing:0.05em;">КОММЮНИКЕ ИСПОЛНИТЕЛЬНОГО СОВЕТА — СТАТУС АРКАЛИС</strong><br><br>
+            Уважаемые сотрудники. Ситуация находится под контролем. Реализация плана восстановления идёт согласно графику. Нестабильность, наблюдаемая во внешней среде, является <span class="hl">временной и управляемой</span>. «Люминарис» сохраняет институциональную структуру и операционный потенциал. Вашего доверия и профессионализма достаточно для того, чтобы <span class="redacted">████████████████████████████████████████████████████</span>.
+            <span class="glitch">[ДОКУМЕНТ ОБРЕЗАН. ДАТА ОТПРАВКИ: <span class="corrupt">ДАННЫЕ НЕДОСТУПНЫ</span>]</span>
+          </div>
+          <div class="doc-status"><span class="status-corrupt">ПОВРЕЖДЁН</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== ECHO ===== -->
+<section id="echo">
+  <div class="container">
+    <div class="echo-warning-header">
+      <span>00 — 05</span> / Явление «Эхо» — класс информации: ΔΔ-03
+    </div>
+
+    <div class="fade-in">
+      <h2 style="color: rgba(220,200,190,0.8);">Эхо — <strong style="font-weight:700; color:rgba(220,190,180,0.9)">токсичная реальность<br>нового периода</strong></h2>
+
+      <div class="echo-body" style="margin-top:32px;">
+        <p>Эхо — это не явление природы. Это <span class="hl">следствие</span>.</p>
+
+        <p>В ходе масштабного промышленного применения технологий Искры взаимодействие синтетических информационно-энергетических конструктов с мировой средой породило побочный продукт, изначально квалифицированный внутренними документами как «аномальный шум» или «нежелательный резонанс». Официально явление получило обозначение Э-0 (Эхо-нулевое). Реальные масштабы его распространения и характер воздействия на мир стали очевидны позже, чем корпоративные структуры были готовы признать.</p>
+
+        <p>Эхо накапливается в среде — в воздухе, воде, почве, а также в магических потоках (манопотоках), пронизывающих мир "Аркалис". Оно не видимо, не имеет запаха и не поддаётся стандартным методам детекции, разработанным до его появления. Его присутствие обнаруживается по последствиям.</p>
+
+        <p>Воздействие Эха на биологические системы — <span class="hl">прогрессирующее</span>. На ранних стадиях оно проявляется как лёгкая дезориентация, нарушение концентрации, фрагментация воспоминаний. На поздних — как структурная деградация когнитивных функций, утрата способности к произвольному управлению манопотоками, а в особо тяжёлых случаях — полная потеря личностной идентичности носителя.</p>
+
+        <p>Воздействие на манопотоки мира не менее разрушительно. Зоны высокой концентрации Эха характеризуются непредсказуемым поведением магических систем, ускоренной деградацией Искр любого класса и возникновением <span class="hl">аномальных феноменов</span>, природа которых остаётся предметом изучения.</p>
+      </div>
+
+      <div class="echo-grid">
+        <div class="echo-cell">
+          <div class="echo-cell-label">Источник</div>
+          <div class="echo-cell-text">Побочный продукт промышленного применения технологии Искры. Накапливается в среде и биологических системах. Не нейтрализуется стандартными методами очистки.</div>
+        </div>
+        <div class="echo-cell">
+          <div class="echo-cell-label">Воздействие на разум</div>
+          <div class="echo-cell-text">Когнитивная фрагментация. Нарушение формирования памяти. Прогрессирующая утрата идентичности. Изменение структуры восприятия реальности. Обратимость — частичная, при ранней диагностике.</div>
+        </div>
+        <div class="echo-cell">
+          <div class="echo-cell-label">Воздействие на манопотоки</div>
+          <div class="echo-cell-text">Дестабилизация магических систем. Формирование аномальных зон. Деградация природных потоков в зонах промышленного присутствия.</div>
+        </div>
+        <div class="echo-cell">
+          <div class="echo-cell-label">Распространение</div>
+          <div class="echo-cell-text">Зоны высокой концентрации — бывшие промышленные объекты «Люминарис» и прилегающие территории. Распространение по манопотокам — непрогнозируемое.</div>
+        </div>
+        <div class="echo-cell">
+          <div class="echo-cell-label">Текущий статус</div>
+          <div class="echo-cell-text">Глобальный уровень концентрации Эха — <span style="color:rgba(200,112,112,0.9)">нестабильный</span>. Данные по отдельным регионам — в реестре Δ-04. Официальный прогноз восстановления — <span class="corrupt">SYS:ERR — ДАННЫЕ НЕДОСТУПНЫ</span>.</div>
+        </div>
+        <div class="echo-cell">
+          <div class="echo-cell-label">Рекомендации</div>
+          <div class="echo-cell-text">Минимизация времени пребывания в зонах высокой концентрации. Регулярная диагностика манопотоков. Использование стандартных фильтрационных протоколов «Люминарис». Немедленная изоляция носителей с признаками тяжёлой стадии.</div>
+        </div>
+      </div>
+      <div class="echo-footnote">
+        <p>Примечание от составителей данного раздела:</p>
+        <br>
+        <p>Мы понимаем, что официальный тон этого портала не соответствует реальному положению дел. «Нестабильность под контролем» — формулировка, которую «Люминарис» использовала на протяжении всего кризиса. Эхо не под контролем. Мир не восстанавливается по плану. Капсулы «Креацион» открылись не через 100 лет.</p>
+        <br>
+        <p>Если вы только проснулись и читаете этот архив: прошло примерно <span class="redacted">██</span> лет. Не сто. Снаружи другой мир — не тот, который вам обещали. То, что вы помните, осталось в прошлом.</p>
+        <br>
+        <p>«Люминарис» всё ещё существует. Но <span class="redacted">████████████████████████████████████████████</span>.</p>
+        <br>
+        <p style="opacity:0.4;">— DOC REF: INTERNAL-ANON · не классифицировано · <span class="corrupt">автор неизвестен</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">LUMINARIS</div>
+    <div class="footer-sub">
+      Официальный корпоративный портал<br>
+      Версия 2.4.1 · Сборка <span class="corrupt">██████</span><br>
+      Все права сохранены<br>
+      Мегакорпорация «Люминарис»<br>
+      Аркалис, Новый период
+    </div>
+  </div>
+  <div>
+    <div class="footer-col-title">Разделы</div>
+    <ul class="footer-links">
+      <li><a href="#home">Главная</a></li>
+      <li><a href="#about">О корпорации</a></li>
+      <li><a href="#iskra">Проект «Искры»</a></li>
+      <li><a href="#creacion">Проект «Креацион»</a></li>
+      <li><a href="#archive">Архивные документы</a></li>
+      <li><a href="#echo">Явление Эхо</a></li>
+    </ul>
+  </div>
+</footer>
+
+<div class="footer-bottom">
+  <span>© «Люминарис» · Аркалис · Все права сохранены · Распространение разрешено: уровень ΔΑ-01</span>
+  <span class="classification-bar">ДОКУМЕНТ НЕ ЯВЛЯЕТСЯ СЕКРЕТНЫМ · ОТКРЫТЫЙ УРОВЕНЬ</span>
+</div>
+
+<script>
+  // АВТО-ИСПРАВЛЕНИЕ ДЛЯ NETLIFY: Очищаем старые пути из памяти браузера (защита от character_profile.html)
+  (function() {
+    const lastPage = sessionStorage.getItem('lmn_profile_page');
+    if (lastPage && (lastPage.includes('character_profile.html') || lastPage === 'character_profile.html')) {
+      sessionStorage.removeItem('lmn_profile_page');
+      console.log('System: Stale profile path cleared.');
+    }
+  })();
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+  });
+</script>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay">
+  <div class="login-bg-grid"></div>
+
+  <div class="login-header">
+    <div class="login-logo">LUMINARIS</div>
+    <div class="login-subtitle">Портал сотрудника · Верификация доступа · Уровень ΔΑ-01</div>
+  </div>
+
+  <div class="id-card">
+
+    <!-- зелёная полоса сверху -->
+    <div class="card-stripe">
+      <div class="card-clearance">
+        <div class="clearance-triangle"></div>
+        <span class="clearance-label">Зелёный</span>
+      </div>
+      <span class="clearance-code">ΔΑ — 01</span>
+    </div>
+
+    <!-- штрих-код -->
+    <div class="card-barcode-stripe" id="barcode-container">
+      <div class="barcode-svg" id="barcode"></div>
+      <span class="barcode-num">LMN-2401-▓▓▓▓</span>
+    </div>
+
+    <!-- белая часть -->
+    <div class="card-body-white">
+      <div class="card-employee-label">Luminaris · Удостоверение сотрудника</div>
+      <div class="card-employee-title">Сотрудник</div>
+      <div class="card-input-label">Номер сотрудника</div>
+      <div class="card-input-prefix-row">
+        <span class="card-input-prefix">LMN-ALPHA —</span>
+        <input
+          class="card-input"
+          id="code-input"
+          type="text"
+          placeholder="· · · ·"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="8"
+        />
+      </div>
+      <button class="card-submit" id="submit-btn">Подтвердить личность →</button>
+      <div class="card-error-msg" id="error-msg">Код не распознан · Доступ запрещён</div>
+      <div class="card-attempts" id="attempts-msg"></div>
+    </div>
+
+    <!-- нижняя зелёная полоска -->
+    <div class="card-bottom-strip">
+      <span class="cbs-text">LUMINARIS CORP · ARCALIS</span>
+      <span class="cbs-text">SYS:AUTH v2.4</span>
+    </div>
+
+  </div>
+
+  <div class="login-hint">Введите номер, указанный на вашей корпоративной карте</div>
+
+  <!-- Экран: Доступ активирован -->
+  <div class="login-transition-screen screen-granted" id="screen-granted">
+    <div class="screen-big">Доступ активирован</div>
+  </div>
+
+  <!-- Экран: Приветствую + имя -->
+  <div class="login-transition-screen screen-welcome" id="screen-welcome">
+    <div class="screen-greet">Приветствую</div>
+    <div class="screen-name" id="screen-name-text"></div>
+  </div>
+
+  <!-- Экран: Доступ запрещён -->
+  <div class="login-transition-screen screen-denied" id="screen-denied">
+    <div class="screen-big-red">Доступ запрещён</div>
+    <div class="screen-sub">Нарушение протокола безопасности</div>
+  </div>
+</div>
+
+<script>
+  // Генерация штрих-кода
+  (function() {
+    const bc = document.getElementById('barcode');
+    const widths = [1,2,1,3,1,2,2,1,3,1,2,1,1,3,2,1,2,3,1,1,2,1,3,2,1,2,1,3,1,2,1,1,2,3,1,2,1,1,3,2];
+    widths.forEach(w => {
+      const bar = document.createElement('span');
+      bar.style.width = w + 'px';
+      bc.appendChild(bar);
+    });
+  })();
+
+  // ╔══════════════════════════════════════════════════════════════════╗
+  // ║           СПИСОК СОТРУДНИКОВ — РЕДАКТИРУЙТЕ ЗДЕСЬ               ║
+  // ║  Чтобы добавить нового сотрудника:                               ║
+  // ║  1. Скопируйте блок от 'КОД': { до },                           ║
+  // ║  2. Вставьте после последней записи (перед закрывающей };)       ║
+  // ║  3. Замените КОД, name, role, accent, profilePage и т.д.        ║
+  // ║  4. Создайте HTML-файл профиля с именем из profilePage           ║
+  // ║  5. Больше ничего не трогайте — всё заработает само             ║
+  // ╚══════════════════════════════════════════════════════════════════╝
+  const CHARACTERS = {
+    'NNNL': {
+      name: 'Аррен Кайн',
+      role: 'Аналитик · Отдел безопасности',
+      greeting: 'Идентификация подтверждена. Добро пожаловать, аналитик.',
+      theme: 'default',
+      accent: null,           // null = базовый акцент сайта
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/arren_kain.html',
+      terminalLines: [
+        '> СВЯЗЬ С БАЗОЙ УСТАНОВЛЕНА',
+        '> МЕСТОПОЛОЖЕНИЕ: [РЕДАКТИРОВАНО]',
+      ],
+    },
+    '666X': {
+      name: 'Orpheus Kain',
+      role: 'Куратор',
+      greeting: 'Канал защищён. Личность подтверждена.',
+      theme: 'default',
+      accent: '#b08040',
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/arren_kain.html', // ← файл профиля этого персонажа
+
+    },
+    '148B': {
+      name: 'Lysandor Prime',
+      role: 'Аналитик',
+      greeting: 'Канал защищён. Личность подтверждена.',
+      theme: 'default',
+      accent: '#3a7aaa',
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/lysandor_prime.html',
+    },
+    '666S': {
+      name: 'Noxar Virell',
+      role: 'Оператор',
+      greeting: 'Канал защищён. Личность подтверждена.',
+      theme: 'default',
+      accent: '#2a8a7a',
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/noxar_virell.html',
+    },
+    '676P': {
+      name: 'Aelion Varis',
+      role: 'Техники',
+      greeting: 'Канал защищён. Личность подтверждена.',
+      theme: 'default',
+      accent: '#8a3030',
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/aelion_varis.html',
+
+    },
+    '498E': {
+      name: 'Daxen Korr',
+      role: 'Интеграторы',
+      greeting: 'Канал защищён. Личность подтверждена.',
+      theme: 'default',
+      accent: '#3a7a4a',
+      lore: 'Уровень допуска ΔΑ-01 · Статус: активен · Сектор:  ██████',
+      profilePage: 'profiles/daxen_korr.html',
+    },
+  };
+
+  // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ БАЗЫ (Гарантирует правильный путь для каждого персонажа)
+  if (CHARACTERS['666X']) {
+    CHARACTERS['666X'].profilePage = 'profiles/arren_kain.html';
+  }
+  if (CHARACTERS['NNNL']) {
+    CHARACTERS['NNNL'].profilePage = 'profiles/arren_kain.html';
+  }
+
+  // Тема → CSS-переменные акцента
+  const THEMES = {
+    'default': { '--p-accent': '#4a7fa8', '--p-accent-dim': 'rgba(74,127,168,0.15)', '--p-accent-glow': 'rgba(74,127,168,0.3)' },
+    'blue':    { '--p-accent': '#3a7aaa', '--p-accent-dim': 'rgba(58,122,170,0.15)', '--p-accent-glow': 'rgba(58,122,170,0.35)' },
+    'amber':   { '--p-accent': '#b08040', '--p-accent-dim': 'rgba(176,128,64,0.12)',  '--p-accent-glow': 'rgba(176,128,64,0.3)' },
+    'teal':    { '--p-accent': '#2a8a7a', '--p-accent-dim': 'rgba(42,138,122,0.15)', '--p-accent-glow': 'rgba(42,138,122,0.3)' },
+    'red':     { '--p-accent': '#8a3030', '--p-accent-dim': 'rgba(138,48,48,0.15)',  '--p-accent-glow': 'rgba(138,48,48,0.3)' },
+    'green':   { '--p-accent': '#3a7a4a', '--p-accent-dim': 'rgba(58,122,74,0.15)',  '--p-accent-glow': 'rgba(58,122,74,0.3)' },
+    'yellow': {  '--p-accent': '#f2c94c', '--p-accent-dim': 'rgba(242,201,76,0.15)', '--p-accent-glow': 'rgba(242,201,76,0.45)'},
+  };
+
+  // Глобальная переменная для защиты от кэша
+  let CURRENT_PROFILE_URL = null;
+
+  function goToProfile() {
+    const page = CURRENT_PROFILE_URL || sessionStorage.getItem('lmn_profile_page');
+    // Если в памяти все еще сидит старая ссылка или ошибка - блокируем переход
+    if (page && !page.includes('character_profile.html') && page !== 'null') {
+      window.location.href = page;
+    } else {
+      console.error('System: Invalid profile path detected. Please re-authenticate.');
+    }
+  }
+
+  function applyProfile(profile) {
+    const root = document.documentElement;
+    const theme = THEMES[profile.theme] || THEMES['default'];
+
+    // 1. Применить цветовую тему
+    for (const [k, v] of Object.entries(theme)) {
+      root.style.setProperty(k, v);
+    }
+    if (profile.accent) {
+      root.style.setProperty('--accent', profile.accent);
+    }
+
+    // 3. Навбар
+    const navEmployee = document.getElementById('nav-employee-name');
+    navEmployee.textContent = profile.name + ' · ' + profile.role.split('·')[0].trim();
+    navEmployee.style.display = 'flex';
+    if (profile.accent) navEmployee.style.color = profile.accent;
+    document.querySelector('.nav-status').style.display = 'none';
+
+    // 4. Кнопка "Профиль сотрудника" — показать только если profilePage задан
+    const profileBtn = document.getElementById('nav-profile-btn');
+    if (profile.profilePage) {
+      CURRENT_PROFILE_URL = profile.profilePage;
+      sessionStorage.setItem('lmn_profile_page', profile.profilePage);
+      // Сохраняем путь к порталу — чтобы профиль знал куда возвращать
+      sessionStorage.setItem('lmn_portal_page', window.location.href.split('?')[0]);
+      profileBtn.style.display = 'inline-block';
+      if (profile.accent) profileBtn.style.borderColor = profile.accent + '88';
+    } else {
+      profileBtn.style.display = 'none';
+    }
+
+    // 4. Hero eyebrow — персональное
+    const eyebrow = document.querySelector('.hero-eyebrow');
+    if (eyebrow) eyebrow.textContent = `Доступ подтверждён · ${profile.name} · ${profile.lore}`;
+  }
+
+  // Простой EMPLOYEES для обратной совместимости (больше не нужен, но оставим)
+  const EMPLOYEES = Object.fromEntries(
+    Object.entries(CHARACTERS).map(([code, p]) => ['LMN-ALPHA-' + code, p.name])
+  );
+
+  const overlay      = document.getElementById('login-overlay');
+  const input        = document.getElementById('code-input');
+  const btn          = document.getElementById('submit-btn');
+  const errMsg       = document.getElementById('error-msg');
+  const attemptsMsg  = document.getElementById('attempts-msg');
+  const idCard       = document.getElementById('id-card-wrapper');
+  const screenGranted = document.getElementById('screen-granted');
+  const screenWelcome = document.getElementById('screen-welcome');
+  const screenDenied  = document.getElementById('screen-denied');
+  const loginHeader   = document.querySelector('.login-header');
+  const loginHint     = document.querySelector('.login-hint');
+
+  let attemptsLeft = 3;
+
+  function hideCardUI() {
+    // Скрыть карточку, хедер и подсказку
+    document.querySelector('.id-card').style.transition = 'opacity 0.5s ease';
+    document.querySelector('.id-card').style.opacity = '0';
+    loginHeader.style.transition = 'opacity 0.5s ease';
+    loginHeader.style.opacity = '0';
+    loginHint.style.transition = 'opacity 0.5s ease';
+    loginHint.style.opacity = '0';
+    setTimeout(() => {
+      document.querySelector('.id-card').style.display = 'none';
+      loginHeader.style.display = 'none';
+      loginHint.style.display = 'none';
+    }, 500);
+  }
+
+  function showScreen(el) {
+    el.classList.add('show');
+  }
+
+  function hideScreen(el, delay) {
+    setTimeout(() => {
+      el.style.transition = 'opacity 1.2s ease';
+      el.style.opacity = '0';
+      setTimeout(() => { el.classList.remove('show'); el.style.opacity = ''; el.style.transition = ''; }, 1200);
+    }, delay);
+  }
+
+  function tryAuth() {
+    const rawVal = input.value.trim();
+    const authKey = rawVal.toUpperCase(); // Делаем код нечувствительным к регистру
+    // Полная очистка перед входом
+    sessionStorage.removeItem('lmn_profile_page');
+    CURRENT_PROFILE_URL = null;
+
+    const profile = CHARACTERS[authKey];
+    const name = profile ? profile.name : null;
+
+    if (profile) {
+      // ЗАПИСЫВАЕМ ПУТЬ НЕМЕДЛЕННО (до анимации), чтобы убить кэш
+      CURRENT_PROFILE_URL = profile.profilePage;
+      sessionStorage.setItem('lmn_profile_page', profile.profilePage);
+
+      // ===== УСПЕХ =====
+      errMsg.classList.remove('visible');
+      attemptsMsg.classList.remove('visible');
+      input.disabled = true;
+      btn.disabled = true;
+      input.style.borderColor = '#4a9a60';
+      btn.textContent = 'Идентификация...';
+      btn.style.background = '#1e5232';
+
+      setTimeout(() => {
+        hideCardUI();
+      }, 500);
+
+      // Показать "Доступ активирован"
+      setTimeout(() => {
+        showScreen(screenGranted);
+      }, 1100);
+
+      // Убрать "Доступ активирован", показать "Приветствую + имя"
+      setTimeout(() => {
+        hideScreen(screenGranted, 0);
+      }, 2800);
+
+      setTimeout(() => {
+        document.getElementById('screen-name-text').textContent = name.toUpperCase();
+        showScreen(screenWelcome);
+      }, 3800);
+
+      // Убрать приветствие
+      setTimeout(() => {
+        hideScreen(screenWelcome, 0);
+      }, 5800);
+
+      // Показать сайт
+      setTimeout(() => {
+        applyProfile(profile);
+        overlay.classList.add('hidden');
+        setTimeout(() => { overlay.style.display = 'none'; }, 700);
+      }, 7000);
+
+    } else {
+      // ===== ОШИБКА =====
+      attemptsLeft--;
+      input.classList.remove('error');
+      void input.offsetWidth;
+      input.classList.add('error');
+      setTimeout(() => input.classList.remove('error'), 400);
+
+      if (attemptsLeft <= 0) {
+        // Последняя попытка
+        input.disabled = true;
+        btn.disabled = true;
+        errMsg.textContent = 'Код не распознан · Доступ запрещён';
+        errMsg.classList.add('visible');
+        attemptsMsg.classList.remove('visible');
+
+        setTimeout(() => {
+          overlay.classList.add('denied-state');
+          hideCardUI();
+        }, 800);
+
+        setTimeout(() => {
+          showScreen(screenDenied);
+        }, 1400);
+
+        // Гасим экран и закрываем — сайт никогда не показываем
+        setTimeout(() => {
+          // Заменяем весь body, не убирая overlay — сайт не просвечивает
+          document.body.innerHTML = '<div style="background:#080202;position:fixed;inset:0;display:flex;align-items:center;justify-content:center;"><span style="font-family:monospace;font-size:11px;letter-spacing:0.2em;color:rgba(122,48,48,0.45)">ДОСТУП ЗАБЛОКИРОВАН &middot; ПЕРЕЗАПУСТИТЕ СТРАНИЦУ</span></div>';
+        }, 3800);
+
+      } else {
+        const word = attemptsLeft === 1 ? 'попытка' : 'попытки';
+        errMsg.textContent = 'Код не распознан · Доступ запрещён';
+        errMsg.classList.add('visible');
+        attemptsMsg.textContent = 'Осталось ' + attemptsLeft + ' ' + word;
+        attemptsMsg.classList.add('visible');
+        setTimeout(() => { input.value = ''; }, 600);
+      }
+    }
+  }
+
+  btn.addEventListener('click', tryAuth);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
+  input.addEventListener('input', () => { errMsg.classList.remove('visible'); attemptsMsg.classList.remove('visible'); });
+</script>
+</body>
+</html>

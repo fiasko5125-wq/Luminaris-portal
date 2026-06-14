@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMINARIS — Схема Комплекса Ограниченного Доступа</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;500;700&family=IBM+Plex+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Корневые стили и палитра организации */
+    :root {
+      --bg: #0a0b0d;
+      --bg2: #0e1014;
+      --bg3: #131519;
+      --border: rgba(180,190,210,0.06);
+      --border2: rgba(180,190,210,0.15);
+      --text: #c8cdd8;
+      --text-dim: #5a6070;
+      --text-bright: #e8ecf4;
+      
+      /* ЦВЕТА СЕКТОРОВ */
+      --clr-type-medical: #3a7a5a;     
+      --clr-type-technical: #4a7fa8;   
+      --clr-type-residential: #bda052; 
+      --clr-type-science: #8a4af0;     
+      --clr-type-storage: #708090;     
+      --clr-type-humanity: #7bc25e;     
+      --clr-type-story: #c254dd;       
+      --clr-type-default: #a0a5b5;     
+
+      /* Цвета звезд рейтинга */
+      --color-star-active: #ffbb00;
+      --color-star-inactive: rgba(90, 96, 112, 0.25);
+      
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Syne', sans-serif;
+      --techno: 'Share Tech Mono', monospace;
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.005) 2px,
+        rgba(255,255,255,0.005) 4px
+      );
+      pointer-events: none;
+      z-index: 101;
+    }
+
+    /* Верхняя панель */
+    nav {
+      background: rgba(10,11,13,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .nav-logo {
+      font-family: var(--techno);
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      color: var(--text-bright);
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-logo::before {
+      content: '';
+      display: block;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--text-dim);
+      border-radius: 2px;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.08) 100%);
+    }
+
+    /* Кнопка возврата в профиль */
+    .nav-back-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: transparent;
+      border: 1px solid var(--border2);
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .nav-back-btn:hover {
+      color: var(--text-bright);
+      border-color: rgba(180,190,210,0.35);
+      background: rgba(180,190,210,0.04);
+    }
+
+    .nav-back-btn .nav-back-name {
+      color: var(--text-bright);
+      letter-spacing: 0.1em;
+    }
+
+    .nav-logo::after {
+      content: 'ИЕРАРХИЧЕСКАЯ МАТРИЦА ДЕЛЬТА [GLOBAL OVERRIDE SYSTEM]';
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+
+    .player-clearance-hub {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border2);
+      padding: 6px 14px;
+      letter-spacing: 0.05em;
+      color: #9cb1c2;
+    }
+
+    .main-workspace {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 56px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-container {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      cursor: grab;
+      /* Бесконечная сетка через background-pattern.
+         CSS-переменные обновляются из JS при каждом пане/зуме. */
+      --grid-x: 0px;
+      --grid-y: 0px;
+      --grid-size: 40px;
+      background-color: var(--bg2);
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: var(--grid-size) var(--grid-size);
+      background-position: var(--grid-x) var(--grid-y);
+    }
+
+    .map-container:active {
+      cursor: grabbing;
+    }
+
+    /* Сетка на контейнере — бесконечная во все стороны */
+    .map-grid-bg { display: none; }
+
+    .map-canvas-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .svg-sector-node {
+      pointer-events: all;
+      cursor: pointer;
+    }
+
+    .svg-connection-line {
+      stroke: var(--border2);
+      stroke-width: 1.5px;
+      stroke-dasharray: 4px 4px;
+      animation: connectionPulse 45s linear infinite, lineEntrance 0.5s ease both;
+      animation-delay: 0s, calc(var(--line-i, 0) * 40ms + 100ms);
+    }
+
+    @keyframes pageEntrance {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    nav, .main-workspace {
+      animation: pageEntrance 0.35s ease both;
+    }
+
+    /* После окончания анимации ноды должны быть полностью кликабельны */
+    .svg-sector-node {
+      animation-fill-mode: both;
+    }
+
+    @keyframes lineEntrance {
+      from { opacity: 0; stroke-width: 0; }
+      to   { opacity: 1; stroke-width: 1.5px; }
+    }
+
+    @keyframes nodeEntrance {
+      from {
+        opacity: 0;
+        transform: scale(0.82) translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .svg-sector-node {
+      cursor: pointer;
+      opacity: 0;
+      animation: nodeEntrance 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--node-i, 0) * 45ms + 180ms);
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    .node-rect {
+      fill: var(--bg3);
+      stroke-width: 1.5px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .svg-sector-node:hover .node-rect {
+      fill: rgba(255,255,255,0.02);
+      stroke-width: 2px;
+    }
+
+    .node-text-main {
+      font-family: var(--techno);
+      font-size: 14px;
+      fill: var(--text-bright);
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .node-text-tag {
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 500;
+      text-anchor: middle;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .star-active { fill: var(--color-star-active); }
+    .star-inactive { fill: var(--color-star-inactive); }
+
+    /* Динамические цвета */
+    .type-medical .node-rect { stroke: var(--clr-type-medical); }
+    .type-medical .node-text-tag { fill: var(--clr-type-medical); }
+    
+    .type-technical .node-rect { stroke: var(--clr-type-technical); }
+    .type-technical .node-text-tag { fill: var(--clr-type-technical); }
+    
+    .type-residential .node-rect { stroke: var(--clr-type-residential); }
+    .type-residential .node-text-tag { fill: var(--clr-type-residential); }
+    
+    .type-micro-residential .node-rect { stroke: var(--clr-type-residential); }
+    .type-micro-residential .node-text-tag { fill: var(--clr-type-residential); }
+
+    .type-science .node-rect { stroke: var(--clr-type-science); }
+    .type-science .node-text-tag { fill: var(--clr-type-science); }
+    
+    .type-storage .node-rect { stroke: var(--clr-type-storage); }
+    .type-storage .node-text-tag { fill: var(--clr-type-storage); }
+
+    .type-humanity .node-rect { stroke: var(--clr-type-humanity); }
+    .type-humanity .node-text-tag { fill: var(--clr-type-humanity); }
+    
+    .type-story .node-rect { stroke: var(--clr-type-story); }
+    .type-story .node-text-tag { fill: var(--clr-type-story); }
+
+    .type-default .node-rect { stroke: var(--clr-type-default); }
+    .type-default .node-text-tag { fill: var(--clr-type-default); }
+
+    .has-override-locked .node-text-tag { fill: #dca327 !important; font-weight: 700; }
+    .has-override-critical .node-text-tag { fill: #e04343 !important; font-weight: 700; animation: textBlink 2s infinite ease-in-out; }
+    .has-override-disabled .node-text-tag { fill: #60687a !important; }
+
+    @keyframes textBlink {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Тултип */
+    .map-tooltip {
+      position: absolute;
+      background: rgba(12, 14, 18, 0.98);
+      border: 1px solid var(--border2);
+      padding: 14px 18px;
+      pointer-events: none;
+      display: none;
+      z-index: 50;
+      min-width: 290px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+
+    .tooltip-header {
+      font-family: var(--techno);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 6px;
+    }
+
+    .tooltip-tag-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .tooltip-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-block;
+    }
+
+    .tooltip-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .tooltip-alert-box {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: rgba(224, 67, 67, 0.04);
+      border-left: 2px solid #e04343;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #fca8a8;
+    }
+
+    /* Боковая панель */
+    .sidebar-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 370px;
+      background: rgba(14, 16, 20, 0.98);
+      backdrop-filter: blur(12px);
+      border-left: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      z-index: 90;
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.65);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-panel.open { transform: translateX(0); }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .sidebar-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-close-btn:hover {
+      color: var(--text-bright);
+      border-color: var(--text-dim);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .sidebar-tag-line {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-title {
+      font-family: var(--sans);
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--text-bright);
+    }
+
+    .sidebar-content {
+      padding: 24px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sector-info-card {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .info-row-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 12px;
+    }
+
+    .info-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .info-status-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid var(--border2);
+    }
+
+    .sidebar-stars-display {
+      display: flex;
+      gap: 4px;
+      font-size: 15px;
+      color: var(--color-star-active);
+    }
+    .sidebar-stars-display span.inactive {
+      color: var(--text-dim);
+      opacity: 0.2;
+    }
+
+    .info-description-box {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    /* Сетка комнат */
+    .rooms-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    /* Чип комнаты */
+    .room-chip {
+      position: relative;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(180,190,210,0.1);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      user-select: none;
+      max-width: 100%;
+    }
+
+    .room-chip-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 260px;
+    }
+
+    .room-chip::before {
+      content: '■';
+      font-size: 5px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .room-chip:hover {
+      border-color: rgba(180,190,210,0.35);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-bright);
+    }
+
+    /* Компактный hover-тултип (превью) */
+    .room-chip .room-preview {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 240px;
+      background: rgba(10,11,14,0.98);
+      border: 1px solid rgba(180,190,210,0.16);
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.65;
+      color: var(--text-dim);
+      z-index: 200;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Переворачиваем тултип если он у нижнего края — класс добавляется JS */
+    .room-chip.flip-tooltip .room-preview {
+      bottom: auto;
+      top: calc(100% + 8px);
+    }
+
+    .room-chip .room-preview::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 14px;
+      border: 5px solid transparent;
+      border-top-color: rgba(180,190,210,0.16);
+    }
+
+    .room-chip.flip-tooltip .room-preview::after {
+      top: auto;
+      bottom: 100%;
+      border-top-color: transparent;
+      border-bottom-color: rgba(180,190,210,0.16);
+    }
+
+    .room-preview-name {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-bright);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(180,190,210,0.07);
+    }
+
+    .room-preview-text {
+      /* Обрезаем превью до 3 строк */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .room-preview-hint {
+      margin-top: 7px;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: rgba(180,190,210,0.3);
+      text-transform: uppercase;
+    }
+
+    .room-chip:hover .room-preview { display: block; }
+
+    /* ── МОДАЛЬНОЕ ОКНО КОМНАТЫ ── */
+    .room-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4,5,7,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .room-modal-overlay.open {
+      display: flex;
+    }
+
+    .room-modal {
+      width: 480px;
+      max-width: calc(100vw - 48px);
+      max-height: calc(100vh - 80px);
+      background: rgba(12,14,18,0.99);
+      border: 1px solid rgba(180,190,210,0.2);
+      display: flex;
+      flex-direction: column;
+      animation: modalIn 0.2s ease both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .room-modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(180,190,210,0.07);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .room-modal-header::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(180,190,210,0.25);
+    }
+
+    .room-modal-tag {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.22em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .room-modal-title {
+      font-family: var(--techno);
+      font-size: 17px;
+      letter-spacing: 0.06em;
+      color: var(--text-bright);
+      line-height: 1.3;
+    }
+
+    .room-modal-close {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid rgba(180,190,210,0.15);
+      color: var(--text-dim);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      margin-left: 16px;
+      margin-top: 2px;
+    }
+
+    .room-modal-close:hover {
+      border-color: rgba(180,190,210,0.35);
+      color: var(--text-bright);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .room-modal-body {
+      padding: 20px 24px 24px;
+      overflow-y: auto;
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .room-modal-body::-webkit-scrollbar { width: 3px; }
+    .room-modal-body::-webkit-scrollbar-track { background: transparent; }
+    .room-modal-body::-webkit-scrollbar-thumb { background: rgba(180,190,210,0.15); }
+
+    .canvas-controls-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(10,11,13,0.85);
+      border: 1px solid var(--border2);
+      padding: 8px 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      pointer-events: none;
+      z-index: 40;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-logo">Luminaris</a>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="nav-back-btn" id="nav-back-profile" onclick="backToProfile()">
+        ← Профиль: <span class="nav-back-name" id="nav-profile-name">…</span>
+      </button>
+      <div class="player-clearance-hub" id="userHubDisplay">CLEARANCE LEVEL: LOADING...</div>
+    </div>
+  </nav>
+
+  <div class="main-workspace">
+    <div class="map-container" id="mapContainer">
+      <div class="map-grid-bg" id="mapGrid"></div>
+      
+      <svg class="map-canvas-svg" id="mapSvg">
+        <!-- Вся сцена сидит в этой группе — трансформируем её, не сам SVG -->
+        <g id="mapRoot">
+          <g id="connectionsLayer"></g>
+          <g id="sectorsLayer"></g>
+        </g>
+      </svg>
+
+      <div class="canvas-controls-hint">
+        Наведение читает структуру · Клик по пустому месту закрывает лог · Колесико мыши масштабирует холст
+      </div>
+
+      <div class="map-tooltip" id="mapTooltip"></div>
+    </div>
+
+    <div class="sidebar-panel" id="sidebarPanel">
+      <div class="sidebar-header">
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Скрыть панель">&times;</button>
+        <div class="sidebar-tag-line" id="sidebarTagLine">МАТРИЦА ХРАНИЛИЩА</div>
+        <div class="sidebar-title" id="sidebarMainTitle">Название Объекта</div>
+      </div>
+      
+      <div class="sidebar-content" id="sidebarContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================================================
+    // ДАННЫЕ ИГРОКОВ (PLAYER UTILS)
+    //Считываем ID игрока из URL (?user=noxar_virell), иначе ставим по умолчанию
+    // ==========================================================================
+    const usersDatabase = {
+      "noxar_virell": { name: "Noxar Virell", clearance: "A-01" },
+      "lysandor_prime": { name: "Lysandor Prime", clearance: "A-01" },
+      "daxen_korr": { name: "Daxen Korr", clearance: "A-01" },
+      "arren_kain": { name: "Orpheus Kain", clearance: "A-01" },
+      "aelion_varis": { name: "Aelion Varis", clearance: "A-01" }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentUserKey = urlParams.get('user') || "noxar_virell";
+    const activePlayer = usersDatabase[currentUserKey] || usersDatabase["noxar_virell"];
+    
+    const playerClearance = activePlayer.clearance; 
+
+    // ==========================================================================
+    // GLOBAL STATE БУНКЕРА (ЕДИНЫЙ ДЛЯ ВСЕХ)
+    // ==========================================================================
+    const bunker = {
+      secondaryTagLabels: {
+        medical: "медицинский сектор",
+        technical: "технический блок",
+        residential: "жилой сектор",
+        science: "научно-исследовательский",
+        storage: "складской комплекс",
+        humanity: "общественный комплекс",
+        story: "сюжетный узел",
+        "micro-residential": "микро-жилой отсек"
+      },
+
+      sectors: [
+        {
+          id: "Новое-прошлое",
+          name: "Жилой комплекс отряда 'Новое-прошлое'",
+          primaryTag: null,                  
+          secondaryTag: "story",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "-",
+          level: 0,                          
+          maxLevel: 0,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          // Пример: upgradeCosts: [1000, 2500, 5000]
+          upgradeCosts: null,
+          x: 250,
+          y: 200,
+          description: "Тихий зал, заполненный рядами криокапсул. Именно в подобных комнатах начинается путь каждого пробуждённого сотрудника Luminaris. После десятилетий сна системы комплекса возвращают персонал к жизни и направляют в действующие сектора объекта.",
+          rooms: [
+            { name: "Зал Консервации", desc: "Шесть криокапсул для долгосрочного анабиоза. Именно здесь начинается путь каждого пробуждённого сотрудника." },
+            { name: "Медицинский пост", desc: "Медицинский пост первичной диагностики после выхода из анабиоза. Контроль витальных показателей. Жаль что не лечит..." },
+            { name: "Пункт Идентификации", desc: "Биометрическая верификация личности и выдача временного допуска." },
+            { name: "Комната с генератором", desc: "Генераторная - позволяет питать электричеством 2 сектора по мимо того где он находится" },
+          ]
+        },
+        {
+          id:"COMMUNICATION",
+          name: "Центр связи",
+          primaryTag: "LOCKED",                  
+          secondaryTag: "story",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "SPARKY,FOOD",
+          level: 0,                          
+          maxLevel: 1,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          // Пример: upgradeCosts: [1000, 2500, 5000]
+          upgradeCosts: null,
+          upgradeCosts: [2000],
+          x: 450,
+          y: 100,
+          description: "Специализированный узел связи комплекса, предназначенный для приёма и передачи сигналов на большие расстояния. Оснащён коммуникационным терминалом, системами усиления сигнала и оборудованием для перехвата дальних радиопередач. Позволяет поддерживать связь как с сотрудниками внутри комплекса, так и с объектами, находящимися далеко за его пределами.",
+          rooms: [
+               { name: "Коммуникационный зал", desc: "Помещение, оснащённое терминалом дальней связи, системами усиления сигнала и оборудованием для перехвата радиопередач. Позволяет принимать дальние сигналы и устанавливать связь как с сотрудниками комплекса, так и с абонентами, находящимися далеко за пределами бункера." },
+
+                    ]
+        },
+        {
+          id:"BLOCK-B02",
+          name: "Вход в блок B-02",
+          primaryTag: null,                  
+          secondaryTag: "story",      
+          requiredClearance: "B-02",         
+          criticalReason: "",
+          from: "FOOD",
+          level: 0,                          
+          maxLevel: 0,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          // Пример: upgradeCosts: [1000, 2500, 5000]
+          upgradeCosts: null,
+          x: 650,
+          y: 200,
+          description: "Герметичный шлюзовой узел, отделяющий Контур A-01 от более глубоких частей комплекса. Оснащён системой проверки допуска, автоматическими защитными протоколами и терминалом контроля доступа. После подтверждения уровня допуска Δ B-02 массивные защитные двери открывают проход в следующий контур объекта.",
+          rooms: [
+                    ]
+        },
+        {
+          id:"ID-1001",
+          name: "Личная комната",
+          primaryTag: "LOCKED",                  
+          secondaryTag: "micro-residential",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "SHOP-DELIVERY,STORAGE",
+          level: 0,                          
+          maxLevel: 0,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          // Пример: upgradeCosts: [1000, 2500, 5000]
+          upgradeCosts: null,
+          x: -150,
+          y: 100,
+          description: "Личная комната человека по имени 'Black Sabbath'",
+          rooms: [
+              { name: "Личная комната", desc: "оснащена всем необходимым для комфортного проживания в одиночку! оснащена так же бронированым сейфом с 8-значным кодом" },          ]
+        },
+        {
+          id: "EXIT",
+          name: "Выход из объекта",
+          primaryTag: null,                  
+          secondaryTag: "story",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "Новое-прошлое",
+          level: 0,                          
+          maxLevel: 0,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          // Пример: upgradeCosts: [1000, 2500, 5000]
+          upgradeCosts: null,
+          x: 250,
+          y: 400,
+          description: "Начальный модуль комплекса. Содержит комнату поверхностной очистки, где производится базовая нейтрализация остаточного воздействия Эха. Также выполняет проверку допуска и краткую диагностику перед дальнейшим распределением по секторам.",
+          rooms: [
+            { name: "Комната поверхностной очистки", desc: "Автоматизированная камера, предназначенная для удаления остаточного воздействия Эха с поверхности организма и снаряжения. Проводит быструю дезактивацию, стабилизацию состояния и базовую проверку жизненных параметров перед допуском в основные сектора комплекса." },
+          ]
+        },
+        {
+          id: "FOOD",
+          name: "Продовольственный комплекс",
+          primaryTag: null,                  
+          secondaryTag: "humanity",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "Новое-прошлое",
+          level: 1,                          
+          maxLevel: 3,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [500, 600, 750],
+          x: 450,
+          y: 200,
+          description: "Автономный модуль бункера, отвечающий за производство и распределение пищевых ресурсов для персонала. Сектор функционирует \n на основе замкнутых биологических и синтетических систем питания, расчитаная ровно на 6 сотрудников при базовой эксплуатации, обеспечивая стабильное снабжение даже при изоляции комплекса. Вкусняшкес😋",
+          rooms: [
+            { name: "Замкнутая биологическая система питания", desc: "это автономный цикл, в котором органические отходы перерабатываются в питательные вещества, выращиваются простые пищевые культуры и снова возвращаются в систему. Ничего не выбрасывается наружу: всё перерабатывается внутри, поддерживая постоянное производство еды без внешних поставок.\n 'ай вай ты так вкусно рассказываешь еее б#@ пальчики оближешь!'" },
+            { name: "Столовая", desc: "Небольшое помещение при продовольственном модуле для быстрого приёма пищи ограниченной группой персонала. Оснащена автоматической раздаточной линией и терминалами выдачи рационов. Питание формируется системой бункера и подаётся в стандартизированном виде, с возможностью усиленных рационов при необходимости. Помещение функциональное, без зон отдыха — только для краткого восстановления ресурсов" },
+          ]
+        },
+        {
+          id: "HOME",
+          name: "Жилой комплекс",
+          primaryTag: null,                  
+          secondaryTag: "residential",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "Новое-прошлое",
+          level: 1,                          
+          maxLevel: 3,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [300, 450, 600],
+          x: 50,
+          y: 200,
+          description: "Жилой модуль комплекса, предназначенный для размещения сотрудников после пробуждения. Состоит из 6 автономных комнат, оснащённых базовыми удобствами для длительного проживания. Каждое помещение включает спальное место, систему хранения личных вещей и терминал доступа к внутренним сервисам комплекса.\n Теперь можно прятать свои вещи в сейф и никто их не украдет. Или не свои)",
+          rooms: [
+            { name: "Автономная жилая комната x 6", desc: "Небольшое персональное помещение сотрудника, включающее спальное место, шкаф для хранения вещей, рабочий терминал и санитарный узел. Рассчитана на длительное автономное проживание одного человека без необходимости покидать комнату для удовлетворения базовых потребностей.\n Только компьютера с роблоксом не хватает для полного счастья. И ведра." },
+          ]
+        },
+        {
+          id: "HP-MED",
+          name: "Медецинский комплекс",
+          primaryTag: "LOCKED",                  
+          secondaryTag: "medical",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "Новое-прошлое",
+          level: 0,                          
+          maxLevel: 3,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [300, 500, 750],
+          x: 450,
+          y: 300,
+          description: "Медицинский корпус — специализированный модуль комплекса, предназначенный для диагностики, лечения и наблюдения за состоянием сотрудников. Оснащён автоматизированными медицинскими системами, палатой восстановления и оборудованием для проведения экстренных процедур. Обеспечивает поддержание здоровья персонала и оперативное реагирование на большинство медицинских инцидентов.",
+          rooms: [
+            { name: "Комната восстановления", desc: "Небольшая одноместная палата, предназначенная для отдыха и наблюдения за сотрудниками после лечения или тяжёлых нагрузок. Оснащена медицинской кроватью, системой мониторинга состояния и базовыми средствами жизнеобеспечения" },
+            { name: "Столовая", desc: "Специализированное помещение для оказания неотложной медицинской помощи. Оснащено оборудованием для стабилизации критических пациентов, проведения срочных процедур и подготовки к дальнейшему лечению. 'Главное что бы после лечения не осталось лишних деталей)'" },
+          ]
+        },{
+        id:"ELECTRO",
+          name: "Генераторная",
+          primaryTag: null,                  
+          secondaryTag: "technical",      
+          requiredClearance: "A-01",         
+          criticalReason: "-",
+          from: "Новое-прошлое",
+          level: 1,                          
+          maxLevel: 2,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [500,750],
+          x: 50,
+          y: 300,
+          description: "Генераторная - позволяет питать электричеством 2 сектора по мимо того где он находится",
+          rooms: [
+            { name: "Комната с генератором", desc: "Комната с достаточно мощным генератором, энергии в бункере хватает на 120 лет но какой в этом смысл если к ней изначально нету доступа? Похоже сюда влезет еще один" },
+        ]
+        },
+         {
+        id:"SPARKY",
+          name: "Сектор преобразования искр",
+          primaryTag: ["CRITICAL", "LOCKED"],                  
+          secondaryTag: "science",      
+          requiredClearance: "A-01",         
+          criticalReason: "Сильная Концинтрация Эха! (Эхо ~ 98%) Требуется Экстренная очистка не без помощи профессионалов! ",
+          from: "Новое-прошлое",
+          level: 0,                          
+          maxLevel: 3,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [500,3000,5000],
+          x: 250,
+          y: 100,
+          description: "Сектор преобразования искр - созданый для преобразования искр 'yellow' в 'purple' так-же позволяет хранить на личном электронном счете целую 1000 искр! !!для того что бы синтезировать искры типа 'green' и 'red' вы должны обладать пропуском Delta C-03 и Delta E-04 и получить позволения у выше стоящих цепей!! ",
+          rooms: [
+            { name: "Комната преобразования искр", desc: "Комната для преобразования искр но для полноценного ее использования требуются высокие пропуски, так-же в комнате есть Спаркомат который позволяет положить искры на личный счет или снять. Для того что бы расширить личный счет вы должны позвонить на горячую линию Банковского отдела Luminaris" },
+          ]
+        },{
+        id:"ID-1717",
+          name: "Личная комната",
+          primaryTag: "LOCKED",                  
+          secondaryTag: "micro-residential",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "SPARKY,FOOD",
+          level: 0,                          
+          maxLevel: 0,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: "-",
+          x: 650,
+          y: 100,
+          description: "Личная комната человека по имени 'Zizi Gatsu'",
+          rooms: [
+            { name: "Личная комната", desc: "оснащена всем необходимым для комфортного проживания в одиночку!" },
+          ]
+        },{
+        id:"SHOP-DELIVERY",
+          name: "Центр снабжения",
+          primaryTag: "LOCKED",                  
+          secondaryTag: "humanity",      
+          requiredClearance: "A-01",         
+          criticalReason: "",
+          from: "SPARKY,HOME,Новое-прошлое",
+          level: 0,                          
+          maxLevel: 3,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [777,1500,2000],
+          x: 50,
+          y: 100,
+          description: "Логистический модуль комплекса, предназначенный для заказа, хранения и выдачи оборудования сотрудникам. Через внутреннюю систему снабжения персонал может приобретать инструменты, одежду, расходные материалы и другое имущество за искры. Доставка осуществляется автоматическими дронами и складскими системами комплекса.",
+          rooms: [
+            { name: "Терминал заказов", desc: "Основное помещение сектора, содержащее терминалы снабжения, через которые сотрудники оформляют заказы и получают доступный каталог имущества." },
+            { name: "Пункт выдачи", desc: "Автоматизированный отсек хранения и выдачи грузов. После обработки заказа доставленные предметы помещаются в индивидуальные ячейки для получения сотрудниками." },
+          ]
+        },{
+        id:"STORAGE",
+          name: "Складское помещение",
+          primaryTag: ["CRITICAL", "LOCKED"],                  
+          secondaryTag: "storage",      
+          requiredClearance: "A-01",         
+          criticalReason: "Сильная Концинтрация Эха! (Эхо ~ 74%) Требуется Экстренная очистка не без помощи профессионалов! ",
+          from: "HOME,ELECTRO,SHOP-DELIVERY",
+          level: 0,                          
+          maxLevel: 1,
+          // ── СТОИМОСТЬ ПРОКАЧКИ ───────────────────────────────────────────
+          // Массив чисел: каждый элемент — цена одного уровня (★1, ★2, …)
+          // Количество элементов должно совпадать с maxLevel.
+          // Если прокачки нет — оставь null или пустой массив [].
+          upgradeCosts: [2500],
+          x: -150,
+          y: 200,
+          description: "Крупный складской отсек комплекса, предназначенный для хранения оборудования, расходных материалов и резервного имущества. Большая часть контейнеров и стеллажей не имеет актуальной инвентаризации, поэтому содержимое многих секций остаётся неизвестным до их открытия. Среди стандартных запасов могут встречаться как полезные инструменты и материалы, так и давно забытое имущество прошлых смен.",
+          rooms: [
+            { name: "Складское помещение", desc: "Основной отсек хранения комплекса, заполненный контейнерами, стеллажами и грузовыми ящиками с оборудованием, инструментами и различными запасами. Содержимое многих секций не каталогизировано и становится известно только после их открытия." },
+            { name: "Мастерская транспортного обслуживания", desc: "Техническое помещение для ремонта и обслуживания служебного транспорта. Оснащено инструментами, подъёмным оборудованием и местом для хранения двухместного служебного мотоцикла, используемого для доставки поссылок." },
+          ]
+        },
+      ]
+    };
+
+    // Веса иерархии уровней допуска
+    const clearanceWeights = { "A-01": 1, "B-02": 2, "C-03": 3, "E-04": 4 };
+
+    let panX = 0, panY = 0, zoom = 1;
+    let isDragging = false, startX, startY;
+    let dragDistanceMoved = 0; 
+
+    const mapContainer = document.getElementById('mapContainer');
+    const mapSvg = document.getElementById('mapSvg');
+    const mapRoot = document.getElementById('mapRoot');
+    const mapGrid = document.getElementById('mapGrid');
+    const connectionsLayer = document.getElementById('connectionsLayer');
+    const sectorsLayer = document.getElementById('sectorsLayer');
+    const tooltip = document.getElementById('mapTooltip');
+    const userHubDisplay = document.getElementById('userHubDisplay');
+    
+    const sidebarPanel = document.getElementById('sidebarPanel');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+    const sidebarTagLine = document.getElementById('sidebarTagLine');
+    const sidebarContent = document.getElementById('sidebarContent');
+    const sidebarMainTitle = document.getElementById('sidebarMainTitle');
+
+    function initMap() {
+      userHubDisplay.textContent = `${activePlayer.name.toUpperCase()} // CLEARANCE LEVEL: Δ ${playerClearance.toUpperCase()}`;
+      renderMap();
+      autoCenterCamera(); 
+      setupPanAndZoom();
+      
+      sidebarCloseBtn.addEventListener('click', closeSidebar);
+      window.addEventListener('resize', updateCanvasTransforms);
+    }
+
+    function getSixPointedStarPoints(cx, cy, r) {
+      let points = [];
+      for (let i = 0; i < 12; i++) {
+        let angle = (i * Math.PI) / 6;
+        let radius = (i % 2 === 0) ? r : r / Math.sqrt(3);
+        let x = cx + radius * Math.cos(angle);
+        let y = cy + radius * Math.sin(angle);
+        points.push(`${x},${y}`);
+      }
+      return points.join(" ");
+    }
+
+    function renderMap() {
+      connectionsLayer.innerHTML = '';
+      sectorsLayer.innerHTML = '';
+
+      const sectorMap = new Map();
+      bunker.sectors.forEach(s => sectorMap.set(s.id, s));
+
+      let lineIndex = 0;
+      bunker.sectors.forEach(sector => {
+        if (sector.from && sector.from !== "-") {
+          const parents = sector.from.split(",").map(p => p.trim());
+          parents.forEach(pId => {
+            const parentSector = sectorMap.get(pId);
+            if (parentSector) {
+              const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              line.setAttribute('x1', parentSector.x); line.setAttribute('y1', parentSector.y);
+              line.setAttribute('x2', sector.x);       line.setAttribute('y2', sector.y);
+              line.setAttribute('class', 'svg-connection-line');
+              line.style.setProperty('--line-i', lineIndex++);
+              connectionsLayer.appendChild(line);
+            }
+          });
+        }
+      });
+
+      bunker.sectors.forEach((sector, nodeIndex) => {
+        const isSquare = sector.secondaryTag === "micro-residential";
+        const width = isSquare ? 52 : 145; 
+        const height = 52;
+        
+        const rectX = sector.x - width / 2, rectY = sector.y - height / 2;
+
+        const playerWeight = clearanceWeights[playerClearance] || 0;
+        const requiredWeight = clearanceWeights[sector.requiredClearance] || 0;
+        const hasClearance = playerWeight >= requiredWeight;
+
+        // primaryTag может быть строкой, массивом или null.
+        // Нормализуем в массив для единообразной работы.
+        const rawTags = Array.isArray(sector.primaryTag)
+          ? sector.primaryTag
+          : (sector.primaryTag ? [sector.primaryTag] : []);
+
+        // Если допуска нет и теги не заданы — автоматически ставим LOCKED
+        if (!hasClearance && rawTags.length === 0) rawTags.push("LOCKED");
+
+        const isCritical = rawTags.includes("CRITICAL");
+        const isLocked   = rawTags.includes("LOCKED");
+
+        // На ноде карты CRITICAL важнее визуально
+        const activePrimaryTag = isCritical ? "CRITICAL" : (isLocked ? "LOCKED" : (rawTags[0] || null));
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        
+        let typeClass = `type-${sector.secondaryTag}`;
+        // Если одновременно CRITICAL и LOCKED — оба CSS-класса применяются
+        const overrideClasses = rawTags.map(t => `has-override-${t.toLowerCase()}`).join(' ');
+        g.setAttribute('class', `svg-sector-node ${typeClass} ${overrideClasses}`);
+        g.setAttribute('data-id', sector.id);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', rectX); rect.setAttribute('y', rectY);
+        rect.setAttribute('width', width); rect.setAttribute('height', height);
+        rect.setAttribute('rx', '3'); rect.setAttribute('class', 'node-rect');
+        g.appendChild(rect);
+
+        const textMain = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textMain.setAttribute('x', sector.x);
+        textMain.setAttribute('y', isSquare ? sector.y : sector.y - 5);
+        textMain.setAttribute('class', 'node-text-main');
+        textMain.textContent = sector.id;
+        g.appendChild(textMain);
+
+        if (!isSquare || activePrimaryTag) {
+          const textTag = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          textTag.setAttribute('x', sector.x);
+          textTag.setAttribute('y', sector.y + 14);
+          textTag.setAttribute('class', 'node-text-tag');
+          
+          if (activePrimaryTag) {
+            textTag.textContent = activePrimaryTag; 
+            if (isSquare) {
+              textMain.setAttribute('y', sector.y - 6);
+            }
+          } else {
+            textTag.textContent = bunker.secondaryTagLabels[sector.secondaryTag] || sector.secondaryTag;
+          }
+          g.appendChild(textTag);
+        }
+
+        const displayStars = sector.level !== "-" && sector.maxLevel !== "-";
+        if (displayStars) {
+          const starCount = parseInt(sector.maxLevel) || 0;
+          const currentLvl = parseInt(sector.level) || 0;
+          const starSize = 4.5; 
+          const gap = 11;     
+          const startXStars = sector.x - ((starCount - 1) * gap) / 2;
+          const starYPosition = rectY - 11;
+
+          for (let l = 1; l <= starCount; l++) {
+            const currentStarX = startXStars + (l - 1) * gap;
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', getSixPointedStarPoints(currentStarX, starYPosition, starSize));
+            polygon.setAttribute('class', (l <= currentLvl) ? 'star-active' : 'star-inactive');
+            g.appendChild(polygon);
+          }
+        }
+
+        g.addEventListener('mouseenter', (e) => showTooltip(e, sector, activePrimaryTag, hasClearance, isCritical, isLocked, rawTags));
+        g.addEventListener('mousemove', moveTooltip);
+        g.addEventListener('mouseleave', hideTooltip);
+        
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleSectorClick(sector, activePrimaryTag, hasClearance, isCritical, isLocked, rawTags);
+        });
+
+        g.style.setProperty('--node-i', nodeIndex);
+        sectorsLayer.appendChild(g);
+      });
+    }
+
+    function showTooltip(e, sector, activePrimaryTag, hasClearance, isCritical, isLocked, rawTags) {
+      let secondaryLabel = bunker.secondaryTagLabels[sector.secondaryTag] || sector.secondaryTag;
+      let headerHtml = `<span>ОБЪЕКТ ${sector.id} // ${sector.name.toUpperCase()}</span>`;
+      let badgesHtml = "";
+      let alertBoxHtml = "";
+
+      if (activePrimaryTag) {
+        // Показываем бейдж для каждого тега из rawTags
+        const tagsToShow = Array.isArray(sector.primaryTag)
+          ? sector.primaryTag
+          : (sector.primaryTag ? [sector.primaryTag] : [activePrimaryTag]);
+        tagsToShow.forEach(tag => {
+          let badgeColor = tag === "CRITICAL" ? "#e04343" : tag === "LOCKED" ? "#dca327" : "#60687a";
+          badgesHtml += `<div class="tooltip-badge" style="color: ${badgeColor}">СТАТУС: ${tag}</div>`;
+        });
+        
+        if (isLocked || !hasClearance) {
+          badgesHtml += `<div class="tooltip-badge" style="color: #5a6070; margin-top: 2px;">ТРЕБУЕМЫЙ ДОПУСК: Δ ${sector.requiredClearance}</div>`;
+        }
+        
+        // criticalReason показывается всегда, если задан — независимо от наличия LOCKED
+        if (sector.criticalReason) {
+          alertBoxHtml = `<div class="tooltip-alert-box">ВНИМАНИЕ: ${sector.criticalReason}</div>`;
+        }
+      } else {
+        badgesHtml += `<div class="tooltip-badge" style="color: var(--text-bright)">ТИП: ${secondaryLabel.toUpperCase()}</div>`;
+        badgesHtml += `<div class="tooltip-badge" style="color: #3a7a5a; margin-top: 2px;">ДОСТУП СИНХРОНИЗИРОВАН</div>`;
+      }
+
+      tooltip.innerHTML = `
+        <div class="tooltip-header">${headerHtml}</div>
+        <div class="tooltip-tag-container">${badgesHtml}</div>
+        <div class="tooltip-desc">${sector.description}</div>
+        ${alertBoxHtml}
+      `;
+      
+      tooltip.style.display = 'block';
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const rect = mapContainer.getBoundingClientRect();
+      tooltip.style.left = `${e.clientX - rect.left + 15}px`;
+      tooltip.style.top = `${e.clientY - rect.top + 15}px`;
+    }
+
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    function handleSectorClick(sector, activePrimaryTag, hasClearance, isCritical, isLocked, rawTags) {
+      document.querySelectorAll('.node-rect').forEach(r => r.style.strokeWidth = "1.5px");
+      const currentRect = document.querySelector(`.svg-sector-node[data-id="${sector.id}"] .node-rect`);
+      if (currentRect) currentRect.style.strokeWidth = "2.5px";
+
+      let secondaryLabel = bunker.secondaryTagLabels[sector.secondaryTag] || sector.secondaryTag;
+      sidebarTagLine.textContent = `АРХИВ ДАННЫХ // ТИП: ${secondaryLabel.toUpperCase()}`;
+      sidebarMainTitle.textContent = sector.name;
+
+      let contentHtml = "";
+
+      if (!hasClearance) {
+        let badgeStyle = "color: #dca327; border-color: rgba(220,163,39,0.3); background: rgba(220,163,39,0.05);";
+        
+        contentHtml = `
+          <div class="sector-info-card">
+            <div class="info-row-meta">
+              <span class="info-label">МАТРИЧНЫЙ РЕЖИМ</span>
+              <span class="info-status-badge" style="${badgeStyle}">LOCKED / ЗАБЛОКИРОВАН</span>
+            </div>
+            
+            <div style="color:#fca8a8; font-family:var(--mono); font-size:12px; border:1px solid rgba(224,67,67,0.25); background: rgba(224,67,67,0.03); padding:12px; line-height:1.5;">
+              <span style="color:#e04343; font-weight:700;">ОШИБКА ДОСТУПА:</span> Вы не можете просмотреть всю информацию о секторе. Вам нужен допуск: <span style="color:#fff; background:#5a6070; padding:1px 5px; font-size:10px; border-radius:2px;">Δ ${sector.requiredClearance}</span>.
+            </div>
+
+            <div class="info-description-box">
+              <div class="info-label" style="margin-bottom: 6px;">Краткое описание</div>
+              <span style="color: var(--text-dim); font-style: italic;">${sector.description}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        let starsHtml = "";
+        if (sector.level !== "-" && sector.maxLevel !== "-") {
+          starsHtml += `<div style="margin-top: 4px;">`;
+          starsHtml += `<div class="info-label" style="margin-bottom: 6px;">Модернизация узла</div>`;
+          starsHtml += `<div class="sidebar-stars-display">`;
+          for (let i = 1; i <= parseInt(sector.maxLevel); i++) {
+            starsHtml += `<span class="${i <= parseInt(sector.level) ? '' : 'inactive'}">★</span>`;
+          }
+          starsHtml += `</div></div>`;
+        }
+
+        // ── Комнаты: скрываем если isLocked (включая комбо CRITICAL+LOCKED) ──
+        let roomsHtml = '';
+        if (isLocked) {
+          roomsHtml = `
+            <div style="border:1px solid rgba(220,163,39,0.2); background:rgba(220,163,39,0.04); padding:12px 14px;">
+              <div style="font-family:var(--mono); font-size:10px; letter-spacing:0.12em; color:#dca327; text-transform:uppercase; margin-bottom:4px;">Доступ ограничен</div>
+              <div style="font-family:var(--mono); font-size:11px; color:rgba(220,163,39,0.5); letter-spacing:0.06em;">Топология сектора недоступна до разблокировки</div>
+            </div>`;
+        } else {
+          // Нормализация: комната может быть строкой или объектом {name, desc}
+          const normalizedRooms = sector.rooms.map(r =>
+            typeof r === 'string'
+              ? { name: r, desc: '' }
+              : r
+          ).filter(r => r.name && r.name.trim() !== '');
+
+          roomsHtml = `<div class="info-label" style="margin-bottom: 10px;">Внутренняя топология (${normalizedRooms.length})</div>`;
+          if (normalizedRooms.length === 0) {
+            roomsHtml += `<div style="font-size:12px; color:var(--text-dim); font-family: var(--mono)">[СПИСОК ТЕХНИЧЕСКИ ОГРАНИЧЕН]</div>`;
+          } else {
+            roomsHtml += `<div class="rooms-grid">`;
+            normalizedRooms.forEach((room) => {
+              const previewBlock = room.desc
+                ? `<div class="room-preview">
+                     <div class="room-preview-name">${room.name}</div>
+                     <div class="room-preview-text">${room.desc}</div>
+                     <div class="room-preview-hint">нажмите для полного описания</div>
+                   </div>`
+                : '';
+              const dataName = room.name.replace(/"/g, '&quot;');
+              const dataDesc = (room.desc || '').replace(/"/g, '&quot;');
+              roomsHtml += `<div class="room-chip" data-room-name="${dataName}" data-room-desc="${dataDesc}" onclick="openRoomModal(this)">
+                <span class="room-chip-name">${room.name}</span>${previewBlock}
+              </div>`;
+            });
+            roomsHtml += `</div>`;
+          }
+        }
+
+        // ── Стоимость прокачки ──────────────────────────────────────────
+        // Берём массив upgradeCosts из данных сектора.
+        // Каждый элемент — цена уровня (★1, ★2, …).
+        // Число форматируется с разделителем тысяч (1 000, 2 500 …).
+        let upgradeHtml = '';
+        const costs = sector.upgradeCosts;
+        const currentLvl = parseInt(sector.level) || 0;
+        if (costs && Array.isArray(costs) && costs.length > 0) {
+          upgradeHtml += `<div><div class="info-label" style="margin-bottom:10px;">Стоимость прокачки</div>`;
+          upgradeHtml += `<div style="display:flex; flex-direction:column; gap:5px;">`;
+          costs.forEach((price, idx) => {
+            const starNum  = idx + 1;
+            const isPast   = starNum <= currentLvl;   // уже куплено
+            const isCurrent= starNum === currentLvl + 1; // следующий
+            const priceStr = price.toLocaleString('ru-RU');
+            const starHtml = `<span style="color:${isPast ? '#ffbb00' : 'rgba(90,96,112,0.35)'}">★</span>`.repeat(starNum);
+            const rowStyle = isPast
+              ? 'color:rgba(90,96,112,0.4); text-decoration:line-through;'
+              : isCurrent
+                ? 'color:#e8ecf4;'
+                : 'color:var(--text-dim);';
+            upgradeHtml += `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:5px 8px; background:rgba(255,255,255,0.015); border:1px solid rgba(180,190,210,0.07);">
+                <div style="display:flex; gap:3px; font-size:12px;">${starHtml}</div>
+                <div style="font-family:var(--mono); font-size:11px; letter-spacing:0.06em; ${rowStyle}">
+                  ${isPast ? 'Получено' : priceStr + ' ед.'}
+                </div>
+              </div>`;
+          });
+          upgradeHtml += `</div></div>`;
+        }
+
+        // ── Статус-бейдж: показываем все активные теги ──────────────────
+        let badgeStyle = "color: #8faec4; border-color: rgba(143,174,196,0.2);";
+        let statusName = "АКТИВЕН / NORMAL";
+        
+        if (rawTags.length > 0) {
+          // Если есть CRITICAL — красный бейдж имеет приоритет
+          statusName = rawTags.join(" + ");
+          if (isCritical) badgeStyle = "color: #e04343; border-color: rgba(224,67,67,0.3); background: rgba(224,67,67,0.05);";
+          else if (isLocked) badgeStyle = "color: #dca327; border-color: rgba(220,163,39,0.3); background: rgba(220,163,39,0.05);";
+          else badgeStyle = "color: #60687a; border-color: rgba(96,104,122,0.3);";
+        }
+
+        contentHtml = `
+          <div class="sector-info-card">
+            <div class="info-row-meta">
+              <span class="info-label">МАТРИЧНЫЙ РЕЖИМ</span>
+              <span class="info-status-badge" style="${badgeStyle}">${statusName}</span>
+            </div>
+            
+            ${starsHtml}
+
+            ${upgradeHtml}
+
+            <div class="info-description-box">
+              <div class="info-label" style="margin-bottom: 6px;">Служебное назначение</div>
+              ${sector.description}
+              ${(isCritical && sector.criticalReason) ? `<div style="color:#fca8a8; font-family:var(--mono); font-size:11px; margin-top:12px; border-left:2px solid #e04343; padding-left:8px;">${sector.criticalReason}</div>` : ''}
+            </div>
+
+            <div>${roomsHtml}</div>
+          </div>
+        `;
+      }
+
+      sidebarContent.innerHTML = contentHtml;
+      sidebarPanel.classList.add('open');
+    }
+
+    function closeSidebar() {
+      sidebarPanel.classList.remove('open');
+      document.querySelectorAll('.node-rect').forEach(r => r.style.strokeWidth = "1.5px");
+    }
+
+    // ── Модальное окно комнаты ────────────────────────────────────────
+
+    function openRoomModal(chip) {
+      const name = chip.getAttribute('data-room-name') || '';
+      const desc = chip.getAttribute('data-room-desc') || '';
+      if (!desc) return; // нет описания — модалка не нужна
+
+      document.getElementById('roomModalTag').textContent   = 'ПОМЕЩЕНИЕ';
+      document.getElementById('roomModalTitle').textContent = name;
+      document.getElementById('roomModalBody').innerHTML    =
+        desc.split('\n').map(p => p.trim()).filter(Boolean)
+            .map(p => `<p style="margin-bottom:10px">${p}</p>`).join('');
+
+      document.getElementById('roomModalOverlay').classList.add('open');
+    }
+
+    function closeRoomModal(e) {
+      // Закрываем только если клик по оверлею или кнопке, не по самому окну
+      if (e && e.target !== document.getElementById('roomModalOverlay') &&
+          !e.target.classList.contains('room-modal-close')) return;
+      document.getElementById('roomModalOverlay').classList.remove('open');
+    }
+
+    // Закрытие по Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('roomModalOverlay').classList.remove('open');
+      }
+    });
+
+    // Flip tooltip вверх/вниз в зависимости от позиции чипа на экране
+    document.addEventListener('mouseover', (e) => {
+      const chip = e.target.closest('.room-chip');
+      if (!chip) return;
+      const rect = chip.getBoundingClientRect();
+      // Если до верха экрана меньше 160px — показываем тултип снизу
+      chip.classList.toggle('flip-tooltip', rect.top < 160);
+    });
+
+    function autoCenterCamera() {
+      if (bunker.sectors.length === 0) return;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+      bunker.sectors.forEach(s => {
+        if (s.x < minX) minX = s.x; if (s.x > maxX) maxX = s.x;
+        if (s.y < minY) minY = s.y; if (s.y > maxY) maxY = s.y;
+      });
+
+      minX -= 160; maxX += 160; minY -= 160; maxY += 160;
+      const mapWidth = maxX - minX, mapHeight = maxY - minY;
+      const containerRect = mapContainer.getBoundingClientRect();
+      
+      zoom = Math.min(containerRect.width / mapWidth, containerRect.height / mapHeight, 1); 
+      if (zoom < 0.2) zoom = 0.2; 
+
+      panX = containerRect.width / 2 - (minX + mapWidth / 2) * zoom;
+      panY = containerRect.height / 2 - (minY + mapHeight / 2) * zoom;
+      updateCanvasTransforms();
+    }
+
+    function setupPanAndZoom() {
+      mapContainer.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.svg-sector-node')) return;
+        isDragging = true;
+        dragDistanceMoved = 0; 
+        startX = e.clientX - panX; startY = e.clientY - panY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        panX = e.clientX - startX; panY = e.clientY - startY;
+        dragDistanceMoved += Math.abs(e.movementX) + Math.abs(e.movementY); 
+        updateCanvasTransforms();
+      });
+
+      mapContainer.addEventListener('click', (e) => {
+        if (!e.target.closest('.svg-sector-node') && dragDistanceMoved < 5) {
+          closeSidebar();
+        }
+      });
+
+      window.addEventListener('mouseup', () => { 
+        isDragging = false; 
+      });
+
+      mapContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = mapContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
+        const svgX = (mouseX - panX) / zoom, svgY = (mouseY - panY) / zoom;
+
+        if (e.deltaY < 0) zoom = Math.min(zoom * 1.1, 3);
+        else zoom = Math.max(zoom / 1.1, 0.08); 
+
+        panX = mouseX - svgX * zoom; panY = mouseY - svgY * zoom;
+        updateCanvasTransforms();
+      });
+    }
+
+    function updateCanvasTransforms() {
+      // Трансформируем внутреннюю группу — SVG занимает весь контейнер и не обрезает ничего
+      mapRoot.setAttribute('transform', `translate(${panX},${panY}) scale(${zoom})`);
+      // Сетка синхронизируется через CSS-переменные
+      const gridSize = 40 * zoom;
+      const gx = ((panX % gridSize) + gridSize) % gridSize;
+      const gy = ((panY % gridSize) + gridSize) % gridSize;
+      mapContainer.style.setProperty('--grid-x', gx + 'px');
+      mapContainer.style.setProperty('--grid-y', gy + 'px');
+      mapContainer.style.setProperty('--grid-size', gridSize + 'px');
+    }
+
+    window.onload = initMap;
+
+    // ── Возврат в профиль ─────────────────────────────────────────────
+    function backToProfile() {
+      const profileUrl = sessionStorage.getItem('lmn_profile_page');
+      if (profileUrl && profileUrl !== 'null') {
+        window.location.href = profileUrl;
+      } else {
+        // Если зашли напрямую — попробуем угадать по имени файла
+        window.history.back();
+      }
+    }
+
+    // Отображаем имя персонажа в кнопке «← Профиль»
+    (function setProfileName() {
+      // Берём имя из URL параметра (?char=Orpheus+Kain) или из sessionStorage
+      const params   = new URLSearchParams(window.location.search);
+      const nameParam = params.get('char');
+      const el        = document.getElementById('nav-profile-name');
+      if (el) {
+        if (nameParam) {
+          el.textContent = decodeURIComponent(nameParam).toUpperCase();
+        } else {
+          // Попробуем взять из usersDatabase по ?user= параметру
+          const userId = params.get('user');
+          if (userId && usersDatabase[userId]) {
+            el.textContent = usersDatabase[userId].name.toUpperCase();
+          } else {
+            el.textContent = 'ПРОФИЛЬ';
+          }
+        }
+      }
+    })();
+
+  </script>
+  <!-- ── МОДАЛЬНОЕ ОКНО КОМНАТЫ ── -->
+  <div class="room-modal-overlay" id="roomModalOverlay" onclick="closeRoomModal(event)">
+    <div class="room-modal" id="roomModal">
+      <div class="room-modal-header">
+        <div>
+          <div class="room-modal-tag" id="roomModalTag"></div>
+          <div class="room-modal-title" id="roomModalTitle"></div>
+        </div>
+        <button class="room-modal-close" onclick="closeRoomModal()">×</button>
+      </div>
+      <div class="room-modal-body" id="roomModalBody"></div>
+    </div>
+  </div>
+
+</body>
+</html>

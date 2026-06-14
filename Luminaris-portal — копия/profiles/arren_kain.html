@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личное дело — Lysandor Prime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<script>
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║              ДАННЫЕ ПЕРСОНАЖА — РЕДАКТИРУЙТЕ ЗДЕСЬ                  ║
+// ║  Все поля снабжены комментариями. Интерфейс строится автоматически. ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+const character = {
+
+  // ── ОСНОВНЫЕ ДАННЫЕ ──────────────────────────────────────────────────
+  name:       "Orpheus Kain",         // Полное имя сотрудника
+  callsign:   "KAIN",               // Позывной / оперативный псевдоним
+  race:       "Эльф",            // Раса
+  height:     "220 см",             // Рост
+  weight:     "97 кг",              // Вес
+  age:        "110",                 // Возраст
+  status:     "АКТИВЕН",            // Текущий статус: АКТИВЕН / ЗАМОРОЖЕН / ОГРАНИЧЕН / ЗАСЕКРЕЧЕН
+  clearance:  "ΔΑ — 01",           // Уровень допуска
+  employeeId: "LMN-666X-7777",      // Идентификатор сотрудника
+  division:   "Отдел фабричный", // Подразделение
+
+  // ── ССЫЛКА НА СТРАНИЦУ БУНКЕРА ──────────────────────────────────────
+  // Путь к HTML-файлу карты бункера для этого персонажа.
+  // Если файл лежит рядом — просто имя файла: "bunker_arren_kain.html"
+  // Если в другой папке: "../maps/bunker_arren_kain.html"
+  bunkerUrl: "/bunker_.html",
+
+  // ── АКЦЕНТНЫЙ ЦВЕТ ПЕРСОНАЖА ─────────────────────────────────────────
+  // Цвет подсвечивает имя, бары, активные элементы.
+  // Примеры: '#b08040' (янтарь), '#3a7aaa' (синий), '#2a8a7a' (зелёный),
+  //          '#8a3030' (красный), '#3a7a4a' (изумруд), '#7a4a8a' (фиолет)
+  accent: "#b08040",
+
+  // ── ЧЕТЫРЕ КЛЮЧЕВЫЕ ПЛАШКИ ───────────────────────────────────────────
+  panels: {
+    manaQuality:   "99.0%",         // Качество манопотока (число или текст)
+    iskraCapacity: "270 🗲",        // Вместимость Искр (максимум)
+    resilience:    "22",        // Максимальное здоровье (число/шкала/текст)
+    combatRating:  "D+",            // Боевой рейтинг (A+, B, C-, и т.п.)
+  },
+
+  // ── ХАРАКТЕРИСТИКИ ───────────────────────────────────────────────────
+  // Каждый стат: { label, value, max }
+  // value может быть отрицательным — бар отрисуется соответственно
+  stats: [
+    { label: "Тело",     value: -1, max: 5 }, // Физическая сила и выносливость
+    { label: "Ловкость", value: -1, max: 5 }, // Скорость и точность
+    { label: "Воля",     value:  3, max: 5 }, // Ментальная стойкость
+    { label: "Разум",    value:  4, max: 5 }, // Интеллект и аналитика
+    { label: "Поток (1=5 маны)",    value:  4, max: 5 }, // Управление манопотоком
+    { label: "Харизма",  value:  2, max: 5 }, // Социальные навыки
+  ],
+
+  // ── СПОСОБНОСТИ ──────────────────────────────────────────────────────
+  // Массив: { name, tag, desc }
+  // tag: тип способности — 'Природная' | 'Активная' | 'Пассив' | '[ЗАПРЕЩЕНО]' | любой текст
+  // Добавьте новый объект — интерфейс автоматически расширится.
+  abilities: [
+    {
+      name: "Интеграция систем",
+      tag:  "Пассив",
+      desc: "Повышенная эффективность при работе с терминалами 'Люминарис' и системами видеонаблюдения.",
+    },
+    {
+      name: "Магия ветра",
+      tag:  "Магическая",
+      desc: "Манипуляция и создание ветра",
+    },
+  ],
+
+  // ── ЗАМЕТКИ КУРАТОРА ─────────────────────────────────────────────────
+  // Массив строк. Каждая строка — отдельная запись в блоке.
+  // Поддерживает любое количество записей.
+  notes: [
+    "Идеальный сотрудник",
+  ],
+
+  // ════════════════════════════════════════════════════════════════════
+  //                        МЕДИЦИНСКАЯ КАРТА
+  // ════════════════════════════════════════════════════════════════════
+
+  medical: {
+
+    // ── ДИАГНОЗ МАНОПОТОКА ─────────────────────────────────────────────
+    // Одно из четырёх значений:
+    //   'none'     → нет повреждений (зелёный)
+    //   'light'    → лёгкое повреждение (янтарный)
+    //   'medium'   → среднее повреждение (оранжевый)
+    //   'heavy'    → тяжёлое повреждение (красный)
+    //   'critical' → критическое повреждение (тёмно-красный + мигание)
+    manaDamage: "none",
+
+
+    // ── ОБЩИЕ ДИАГНОЗЫ ────────────────────────────────────────────────
+    // Массив: { name, severity, desc }
+    // severity: 'none' | 'low' | 'mid' | 'high' — влияет на цвет полоски
+    diagnoses: [
+      {
+        name:     "Синдром перетренированности",
+        severity: "low",
+        desc:     "Показатели в пределах нормы для сотрудника Фабричного отдела.",
+      },
+    ],
+
+
+    // ── ИСТОРИЯ ОБСЛЕДОВАНИЙ ─────────────────────────────────────────
+    // Массив: { date, type, result, note }
+    // Добавьте новую запись — таблица расширится автоматически.
+    examHistory: [
+      {
+        date:   "-",
+        type:   "-",
+        result: "-",
+        note:   "-",
+      },
+    ],
+
+
+    // ── ОГРАНИЧЕНИЯ ───────────────────────────────────────────────────
+    // Массив строк — каждая строка отдельный пункт ограничений.
+    restrictions: [
+      "Запрет на Запред на долгое пребывание под солнцем",
+      "Ограничение полевых операций в зонах концентрации Эха > 75%.",
+      "Обязательный психологический скрининг раз в два цикла.",
+    ],
+
+    // ── РЕКОМЕНДАЦИИ ──────────────────────────────────────────────────
+    // Массив строк — каждая строка отдельный пункт.
+    recommendations: [
+      "Регулярные физические нагрузки",
+      "Регулярное принимание витаминов",
+    ],
+
+    // ── ОСОБЫЕ ПОМЕТКИ ────────────────────────────────────────────────
+    // Массив строк — произвольные записи медперсонала.
+    specialNotes: [
+      "Идеальный пациент",
+    ],
+
+  }, // конец medical
+
+}; // конец character
+
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║                  ДАННЫЕ МАГИИ — РЕДАКТИРУЙТЕ ЗДЕСЬ                  ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+const magicData = {
+
+  // ── НАЗВАНИЕ СПОСОБНОСТИ ─────────────────────────────────────────────
+  name: "Магия Ветра",
+
+  // ── ОПИСАНИЕ СПОСОБНОСТИ ─────────────────────────────────────────────
+  description: "Манипуляция (на расстоянии 10 метров) и создание ветра при помощи маны",
+
+  // ── ХАРАКТЕРИСТИКИ ДЛЯ РАДАРНОГО ГРАФИКА ─────────────────────────────
+  // Каждое значение от 0 до 100.
+  // Чем выше — тем дальше от центра точка на графике.
+  stats: {
+    power:     71,   // Сила — мощность воздействия
+    speed:     76,   // Скорость — быстрота активации и полёта
+    radius:    45,   // Радиус — дальность/площадь действия
+    precision: 43,   // Точность — контроль над направлением
+    potential: 100,   // Потенциал — возможности развития
+    cost:      23,   // Затраты — расход маны (выше = дороже)
+  },
+
+}; // конец magicData
+
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║               ДАННЫЕ ОТНОШЕНИЙ — РЕДАКТИРУЙТЕ ЗДЕСЬ                 ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+// Добавьте новый объект { name, value } — карточка появится автоматически.
+// value: число от 1 до 100.
+//   1–25  → Критическое (красный)
+//   26–50 → Низкое      (оранжевый)
+//   51–75 → Приемлемое  (салатовый)
+//   76–100→ Хорошее     (зелёный)
+
+const relationsData = [
+  {
+    name:  "Lysandor Prime",   // Имя персонажа
+    value: 65,            // Уровень отношений (1–100)
+  },
+  {
+    name:  "Noxar Virell",
+    value: 85,
+  },
+  {
+    name:  "Daxen Korr",
+    value: 65,
+  },
+  {
+    name:  "Aelion Varis",
+    value: 85,
+  },
+  {
+    name:  "Margoni Fume",
+    value: 85,
+  },
+]; // конец relationsData
+
+// ╚══════════════════════════════════════════════════════════════════════╝
+//                    КОНЕЦ ДАННЫХ — НИЖЕ НЕ РЕДАКТИРОВАТЬ
+// ╚══════════════════════════════════════════════════════════════════════╝
+</script>
+
+<style>
+  :root {
+    --bg:       #080a0c;
+    --bg2:      #0d0f12;
+    --bg3:      #111417;
+    --bg4:      #161a1e;
+    --border:   rgba(180,190,210,0.08);
+    --border2:  rgba(180,190,210,0.15);
+    --text:     #b8bcc8;
+    --text-dim: #525a68;
+    --text-bright: #dde2ec;
+    --danger:   #7a3030;
+    --danger-text: #c87070;
+    --mono:     'IBM Plex Mono', monospace;
+    --techno:   'Share Tech Mono', monospace;
+    --sans:     'Syne', sans-serif;
+    --accent:   #b08040; /* переопределяется из JS */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(255,255,255,0.006) 2px, rgba(255,255,255,0.006) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,10,12,0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 52px;
+  }
+
+  .header-logo {
+    font-family: var(--techno);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-logo::before {
+    content: '';
+    display: block;
+    width: 18px; height: 18px;
+    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, transparent 40%, rgba(176,128,64,0.2));
+    border-radius: 2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .header-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+
+  /* ── НАВИГАЦИОННЫЕ КНОПКИ ── */
+  .btn-nav {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-nav:hover {
+    color: var(--text-bright);
+    border-color: rgba(180,190,210,0.3);
+    background: rgba(180,190,210,0.04);
+  }
+
+  .btn-nav.active,
+  .btn-nav.primary {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(176,128,64,0.06);
+  }
+
+  .btn-nav.back {
+    border-color: var(--border2);
+    color: var(--text-dim);
+  }
+
+  .btn-nav.back:hover {
+    color: var(--text-bright);
+  }
+
+  /* ── СТРАНИЦЫ ── */
+  .page {
+    display: none;
+    animation: pageIn 0.4s ease both;
+  }
+  .page.active { display: block; }
+
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── КОНТЕЙНЕР ── */
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ── SECTION TAG ── */
+  .stag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .stag::before { content: ''; display: block; width: 28px; height: 1px; background: var(--border2); }
+  .stag .tag-accent { color: var(--accent); }
+
+  /* ────────────────────────────────────────────
+     ПРОФИЛЬ
+  ──────────────────────────────────────────── */
+
+  #page-profile { padding: 56px 0 80px; }
+
+  /* Шапка профиля */
+  .profile-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: start;
+    margin-bottom: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-name-block {}
+
+  .profile-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .profile-eyebrow::before { content: '//'; color: var(--accent); }
+
+  .profile-name {
+    font-family: var(--techno);
+    font-size: clamp(28px, 4vw, 52px);
+    letter-spacing: 0.06em;
+    color: var(--text-bright);
+    line-height: 1;
+    margin-bottom: 8px;
+    transition: color 0.3s;
+  }
+
+  .profile-callsign {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .profile-callsign::before {
+    content: '◈';
+    font-size: 10px;
+  }
+
+  /* Таблица базовых данных */
+  .profile-data-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .pdata-cell {
+    background: var(--bg2);
+    padding: 14px 16px;
+  }
+
+  .pdata-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .pdata-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-bright);
+    line-height: 1.2;
+  }
+
+  .pdata-value.status-active  { color: #5aaa70; }
+  .pdata-value.status-frozen  { color: #5a7aaa; }
+  .pdata-value.status-limited { color: #b08040; }
+  .pdata-value.status-classified { color: var(--danger-text); }
+
+  /* Правая панель — плашки */
+  .profile-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    width: 280px;
+    flex-shrink: 0;
+  }
+
+  .panel-cell {
+    background: var(--bg2);
+    padding: 18px 20px;
+    text-align: center;
+  }
+
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .panel-value {
+    font-family: var(--techno);
+    font-size: 20px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  /* Кнопка медкарты */
+  .btn-med {
+    width: 100%;
+    margin-top: 1px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 11px;
+    border: none;
+    background: rgba(122,48,48,0.2);
+    border: 1px solid rgba(122,48,48,0.35);
+    border-top: none;
+    color: rgba(200,112,112,0.75);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-med:hover {
+    background: rgba(122,48,48,0.35);
+    color: rgba(220,140,140,0.9);
+  }
+
+  .btn-med::before { content: '⊕'; font-size: 12px; }
+
+  /* ── ХАРАКТЕРИСТИКИ + СПОСОБНОСТИ ── */
+  .profile-body {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 40px;
+    align-items: start;
+    margin-bottom: 40px;
+  }
+
+  /* Левая — статы */
+  .stats-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+  }
+
+  .stats-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stats-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: 72px 1fr 32px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .stat-track {
+    height: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .stat-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--accent);
+    transition: width 0.8s ease;
+  }
+
+  .stat-fill.negative {
+    background: rgba(180,80,80,0.6);
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-bright);
+    text-align: right;
+  }
+
+  .stat-val.pos { color: #5aaa70; }
+  .stat-val.neg { color: #aa5a5a; }
+
+  /* Правая — способности */
+  .abilities-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .abilities-panel::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .abilities-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .abilities-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ability-row {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .ability-row:last-child { border-bottom: none; }
+  .ability-row:hover { background: rgba(255,255,255,0.018); }
+
+  .ability-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .ability-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+
+  .ability-tag {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .ability-tag.tag-natural  { color: #5aaa70; border-color: rgba(60,120,80,0.35); }
+  .ability-tag.tag-active   { color: var(--accent); border-color: rgba(176,128,64,0.35); }
+  .ability-tag.tag-passive  { color: #5a7aaa; border-color: rgba(60,80,140,0.35); }
+  .ability-tag.tag-warning  { color: var(--danger-text); border-color: rgba(122,48,48,0.4); }
+
+  .ability-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  /* ── ЗАМЕТКИ КУРАТОРА ── */
+  .notes-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    margin-top: 0;
+  }
+
+  .notes-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .notes-list {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .note-item {
+    padding-left: 16px;
+    border-left: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.75;
+    font-style: italic;
+    position: relative;
+  }
+
+  .note-item::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: 7px;
+    width: 5px; height: 5px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    transform: rotate(45deg);
+  }
+
+  /* ── FOOTER ── */
+  .profile-footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pf-left {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .pf-right {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(122,48,48,0.4);
+    text-transform: uppercase;
+  }
+
+  /* ────────────────────────────────────────────
+     МЕДИЦИНСКАЯ КАРТА
+  ──────────────────────────────────────────── */
+
+  #page-medical { padding: 56px 0 80px; }
+
+  /* Диагноз манопотока — большая плашка */
+  .mana-damage-banner {
+    padding: 28px 36px;
+    border: 1px solid;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mana-damage-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent 60%);
+    pointer-events: none;
+  }
+
+  .mdb-left {}
+
+  .mdb-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  .mdb-title {
+    font-family: var(--techno);
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+
+  .mdb-right {
+    font-family: var(--techno);
+    font-size: 48px;
+    letter-spacing: 0;
+    opacity: 0.12;
+  }
+
+  /* Состояния */
+  .mana-none     { border-color: rgba(60,120,80,0.35);  background: rgba(40,80,50,0.08);  color: #5aaa70; }
+  .mana-light    { border-color: rgba(176,128,64,0.4);  background: rgba(120,90,30,0.08); color: #c09050; }
+  .mana-medium   { border-color: rgba(180,100,40,0.45); background: rgba(140,70,20,0.08); color: #d07040; }
+  .mana-heavy    { border-color: rgba(160,60,60,0.5);   background: rgba(120,40,40,0.1);  color: #c05050; }
+  .mana-critical { border-color: rgba(180,40,40,0.6);   background: rgba(140,20,20,0.12); color: #e04040; animation: critBlink 2s infinite; }
+
+  @keyframes critBlink {
+    0%, 100% { border-color: rgba(180,40,40,0.6); }
+    50%       { border-color: rgba(220,60,60,0.9); box-shadow: 0 0 20px rgba(200,40,40,0.15); }
+  }
+
+  /* Диагнозы */
+  .med-section {
+    margin-bottom: 40px;
+  }
+
+  .med-section-header {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .med-section-tag {
+    color: var(--accent);
+    font-size: 9px;
+  }
+
+  /* Диагнозы — карточки */
+  .diagnoses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .diagnosis-item {
+    background: var(--bg2);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .diag-severity-bar {
+    width: 3px;
+    align-self: stretch;
+    border-radius: 2px;
+    flex-shrink: 0;
+    min-height: 40px;
+  }
+
+  .sev-none { background: rgba(90,170,112,0.4); }
+  .sev-low  { background: rgba(176,128,64,0.5); }
+  .sev-mid  { background: rgba(200,120,60,0.6); }
+  .sev-high { background: rgba(180,60,60,0.7); }
+
+  .diag-body { flex: 1; }
+
+  .diag-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .diag-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .diag-sev-badge {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .badge-none { color: #5aaa70; border-color: rgba(60,120,80,0.3); }
+  .badge-low  { color: #b08040; border-color: rgba(176,128,64,0.3); }
+  .badge-mid  { color: #c07040; border-color: rgba(200,120,60,0.35); }
+  .badge-high { color: var(--danger-text); border-color: rgba(138,48,48,0.4); }
+
+  /* История — таблица */
+  .exam-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+  }
+
+  .exam-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg2);
+  }
+
+  .exam-table td {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .exam-table tr:last-child td { border-bottom: none; }
+  .exam-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .result-norm    { color: #5aaa70; }
+  .result-anomaly { color: #b08040; }
+  .result-stopped { color: var(--danger-text); }
+  .result-stable  { color: #5a7aaa; }
+
+  /* Ограничения / Рекомендации / Пометки — список */
+  .bullet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .bullet-item {
+    background: var(--bg2);
+    padding: 12px 20px 12px 36px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    position: relative;
+  }
+
+  .bullet-item::before {
+    content: '›';
+    position: absolute;
+    left: 16px;
+    color: var(--accent);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* Итоговая пометка */
+  .special-note-item {
+    background: var(--bg3);
+    padding: 14px 20px 14px 36px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(180,160,120,0.65);
+    line-height: 1.7;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    font-style: italic;
+  }
+
+  .special-note-item:last-child { border-bottom: none; }
+
+  .special-note-item::before {
+    content: '!';
+    position: absolute;
+    left: 16px;
+    color: rgba(180,160,120,0.4);
+    font-size: 13px;
+    font-style: normal;
+  }
+
+  .special-notes-wrap {
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  /* redacted */
+  .redacted {
+    background: rgba(200,205,216,0.12);
+    color: transparent;
+    user-select: none;
+    border-radius: 1px;
+    padding: 0 4px;
+  }
+
+  /* ── UTILITIES ── */
+  .mt-4  { margin-top: 4px; }
+  .mt-8  { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-32 { margin-top: 32px; }
+  .mt-40 { margin-top: 40px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+
+  /* ────────────────────────────────────────────
+     МАГИЯ
+  ──────────────────────────────────────────── */
+
+  #page-magic { padding: 56px 0 80px; }
+
+  .magic-layout {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .radar-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .radar-panel-header {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #radar-canvas { display: block; }
+
+  .radar-ability-name {
+    font-family: var(--techno);
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    color: var(--text-bright);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .radar-ability-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.7;
+    padding: 0 8px;
+  }
+
+  .magic-stats-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+  }
+
+  .magic-stats-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .magic-stat-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .magic-stat-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 48px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .magic-stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .magic-stat-track {
+    height: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .magic-stat-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--accent);
+    transition: width 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .magic-stat-val {
+    font-family: var(--techno);
+    font-size: 13px;
+    color: var(--accent);
+    text-align: right;
+  }
+
+
+  /* ── РЕЙТИНГ СПОСОБНОСТИ ── */
+  .magic-rating-block {
+    margin-top: 1px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .magic-rating-block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--rating-color, var(--accent));
+    opacity: 0.7;
+  }
+
+  .magic-rating-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .magic-rating-score {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    flex: 1;
+    text-align: right;
+  }
+
+  .magic-rating-rank {
+    font-family: var(--techno);
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: var(--rating-color, var(--accent));
+    line-height: 1;
+    text-shadow: 0 0 20px var(--rating-glow, transparent);
+    flex-shrink: 0;
+    min-width: 52px;
+    text-align: right;
+  }
+
+  /* ────────────────────────────────────────────
+     ОТНОШЕНИЯ
+  ──────────────────────────────────────────── */
+
+  #page-relations { padding: 56px 0 80px; }
+
+  .relations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .relation-item {
+    background: var(--bg2);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 200px 1fr 52px 130px;
+    align-items: center;
+    gap: 20px;
+    transition: background 0.2s;
+  }
+
+  .relation-item:hover { background: rgba(255,255,255,0.018); }
+
+  .relation-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-bright);
+  }
+
+  .relation-track {
+    height: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .relation-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 2px;
+    transition: width 1s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .rel-critical { background: rgba(180,50,50,0.85); }
+  .rel-low      { background: rgba(200,120,40,0.85); }
+  .rel-decent   { background: rgba(120,185,70,0.85); }
+  .rel-good     { background: rgba(50,170,80,0.85); }
+
+  .relation-value {
+    font-family: var(--techno);
+    font-size: 16px;
+    text-align: right;
+  }
+
+  .relation-badge {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid;
+    text-align: center;
+  }
+
+  .rbadge-critical { color: #c05050; border-color: rgba(180,50,50,0.4); background: rgba(120,30,30,0.15); }
+  .rbadge-low      { color: #c08040; border-color: rgba(200,120,40,0.4); background: rgba(140,80,20,0.12); }
+  .rbadge-decent   { color: #7ab840; border-color: rgba(120,185,70,0.4); background: rgba(80,130,30,0.12); }
+  .rbadge-good     { color: #40b864; border-color: rgba(50,170,80,0.4);  background: rgba(30,120,50,0.12); }
+
+  .rval-critical { color: #c05050; }
+  .rval-low      { color: #c08040; }
+  .rval-decent   { color: #7ab840; }
+  .rval-good     { color: #40b864; }
+
+  /* Кнопка "Вернуться в портал" */
+  #btn-back-portal {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border2);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+  #btn-back-portal:hover {
+    color: var(--text-bright);
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.03);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <div class="header-logo" id="header-logo">LUMINARIS · ЛИЧНОЕ ДЕЛО</div>
+  <div class="header-right">
+    <span class="header-id" id="header-id"></span>
+    <button class="btn-nav active" id="btn-profile" onclick="showPage('profile')">Профиль</button>
+    <button class="btn-nav" id="btn-medical" onclick="showPage('medical')">⊕ Медкарта</button>
+    <button class="btn-nav" id="btn-magic" onclick="showPage('magic')">◈ Магия</button>
+    <button class="btn-nav" id="btn-relations" onclick="showPage('relations')">⬡ Отношения</button>
+    <button class="btn-nav" id="btn-bunker" onclick="goToBunker()">⬡ Бункер</button>
+    <button id="btn-back-portal" onclick="backToPortal()">← Портал</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════
+     СТРАНИЦА — ПРОФИЛЬ
+════════════════════════════════════ -->
+<div id="page-profile" class="page active">
+<div class="wrap">
+
+  <div style="padding-top:48px" class="stag">
+    <span class="tag-accent">ΔΑ — 00</span> / Личное дело сотрудника
+  </div>
+
+  <!-- Топ: имя + плашки -->
+  <div class="profile-top">
+    <div class="profile-name-block">
+      <div class="profile-eyebrow" id="prof-eyebrow"></div>
+      <div class="profile-name" id="prof-name"></div>
+      <div class="profile-callsign" id="prof-callsign"></div>
+      <div class="profile-data-grid" id="prof-data-grid"></div>
+    </div>
+    <div>
+      <div class="profile-panels" id="prof-panels"></div>
+      <button class="btn-med" onclick="showPage('medical')">Медицинская карта</button>
+    </div>
+  </div>
+
+  <!-- Тело: статы + способности -->
+  <div class="profile-body">
+
+    <!-- Статы -->
+    <div class="stats-panel">
+      <div class="stats-header">
+        Характеристики <span style="color:var(--accent)" id="stats-count"></span>
+      </div>
+      <div class="stats-list" id="stats-list"></div>
+    </div>
+
+    <!-- Способности -->
+    <div class="abilities-panel">
+      <div class="abilities-header">
+        Способности · Манопоток
+        <span id="abilities-count" style="color:var(--accent)"></span>
+      </div>
+      <div class="abilities-list" id="abilities-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Заметки куратора -->
+  <div class="notes-panel">
+    <div class="notes-header">
+      Заметки куратора
+      <span style="color:var(--danger-text);font-size:8px;letter-spacing:0.15em">ВНУТРЕННИЙ ДОКУМЕНТ · ΔΓ-03</span>
+    </div>
+    <div class="notes-list" id="notes-list"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="profile-footer">
+    <span class="pf-left" id="pf-id"></span>
+    <span class="pf-right">ДОКУМЕНТ НЕ ПОДЛЕЖИТ РАСПРОСТРАНЕНИЮ · УРОВЕНЬ ΔΑ-01</span>
+  </div>
+
+</div>
+</div>
+
+
+
+<!-- ═══════════════════════════════════
+     СТРАНИЦА — БУНКЕР
+════════════════════════════════════ -->
+
+
+<!-- ═══════════════════════════════════
+     СТРАНИЦА — МЕДКАРТА
+════════════════════════════════════ -->
+<div id="page-medical" class="page">
+<div class="wrap">
+
+  <div style="padding-top:48px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+    <div class="stag" style="margin-bottom:0">
+      <span class="tag-accent">MED</span> / Медицинская карта
+    </div>
+    <button class="btn-nav back" onclick="showPage('profile')">← Назад к профилю</button>
+  </div>
+
+  <!-- Баннер манопотока -->
+  <div class="mana-damage-banner" id="mana-banner">
+    <div class="mdb-left">
+      <div class="mdb-label">Диагноз · Манопоток</div>
+      <div class="mdb-title" id="mana-title"></div>
+    </div>
+    <div class="mdb-right" id="mana-icon"></div>
+  </div>
+
+  <!-- Диагнозы -->
+  <div class="med-section">
+    <div class="med-section-header">
+      Зафиксированные диагнозы
+      <span class="med-section-tag" id="diag-count"></span>
+    </div>
+    <div class="diagnoses-list" id="diagnoses-list"></div>
+  </div>
+
+  <!-- История обследований -->
+  <div class="med-section">
+    <div class="med-section-header">
+      История обследований
+      <span class="med-section-tag" id="exam-count"></span>
+    </div>
+    <table class="exam-table">
+      <thead>
+        <tr>
+          <th>Период</th>
+          <th>Тип</th>
+          <th>Результат</th>
+          <th>Примечание</th>
+        </tr>
+      </thead>
+      <tbody id="exam-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Ограничения + Рекомендации -->
+  <div class="two-col mt-40">
+
+    <div class="med-section" style="margin-bottom:0">
+      <div class="med-section-header">
+        Ограничения
+        <span class="med-section-tag" id="restr-count"></span>
+      </div>
+      <div class="bullet-list" id="restrictions-list"></div>
+    </div>
+
+    <div class="med-section" style="margin-bottom:0">
+      <div class="med-section-header">
+        Рекомендации
+        <span class="med-section-tag" id="recomm-count"></span>
+      </div>
+      <div class="bullet-list" id="recommendations-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Особые пометки -->
+  <div class="med-section mt-40">
+    <div class="med-section-header">
+      Особые пометки
+      <span class="med-section-tag" style="color:var(--danger-text)" id="notes-count"></span>
+    </div>
+    <div class="special-notes-wrap" id="special-notes-list"></div>
+  </div>
+
+  <!-- Footer медкарты -->
+  <div class="profile-footer">
+    <span class="pf-left" id="med-footer-id"></span>
+    <span class="pf-right">МЕДИЦИНСКАЯ ДОКУМЕНТАЦИЯ · КЛАСС MED-07 · <span class="redacted">████████████</span></span>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     СТРАНИЦА — МАГИЯ
+════════════════════════════════════ -->
+<div id="page-magic" class="page">
+<div class="wrap">
+
+  <div style="padding-top:48px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+    <div class="stag" style="margin-bottom:0">
+      <span class="tag-accent">◈ MAG</span> / Магические способности
+    </div>
+    <button class="btn-nav back" onclick="showPage('profile')">← Назад к профилю</button>
+  </div>
+
+  <div class="magic-layout">
+
+    <!-- Радарный график -->
+    <div class="radar-panel">
+      <div class="radar-panel-header">
+        <span>Профиль способности</span>
+        <span style="color:var(--accent)" id="magic-stat-count"></span>
+      </div>
+      <canvas id="radar-canvas" width="380" height="380"></canvas>
+      <div class="radar-ability-name" id="radar-ability-name"></div>
+      <div class="radar-ability-desc" id="radar-ability-desc"></div>
+    </div>
+
+    <!-- Числовые значения -->
+    <div class="magic-stats-panel">
+      <div class="magic-stats-header">
+        Характеристики способности
+        <span style="color:var(--accent)" id="magic-stats-label">×6</span>
+      </div>
+      <div class="magic-stat-list" id="magic-stat-list"></div>
+      <div class="magic-rating-block" id="magic-rating-block">
+        <span class="magic-rating-label">Общий рейтинг</span>
+        <span class="magic-rating-score" id="magic-rating-score"></span>
+        <span class="magic-rating-rank" id="magic-rating-rank"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="profile-footer" style="margin-top:40px">
+    <span class="pf-left" id="magic-footer-id"></span>
+    <span class="pf-right">МАГИЧЕСКИЙ ПРОФИЛЬ · КЛАСС MAG-01</span>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     СТРАНИЦА — ОТНОШЕНИЯ
+════════════════════════════════════ -->
+<div id="page-relations" class="page">
+<div class="wrap">
+
+  <div style="padding-top:48px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+    <div class="stag" style="margin-bottom:0">
+      <span class="tag-accent">⬡ REL</span> / Социальные связи
+    </div>
+    <button class="btn-nav back" onclick="showPage('profile')">← Назад к профилю</button>
+  </div>
+
+  <div class="med-section">
+    <div class="med-section-header">
+      Зафиксированные отношения
+      <span class="med-section-tag" id="rel-count"></span>
+    </div>
+    <div class="relations-list" id="relations-list"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="profile-footer">
+    <span class="pf-left" id="rel-footer-id"></span>
+    <span class="pf-right">СОЦИАЛЬНЫЙ ПРОФИЛЬ · КЛАСС SOC-02</span>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT — РЕНДЕР
+════════════════════════════════════ -->
+<script>
+
+// ── Вспомогательные функции ──────────────────────────────────────────
+
+function setAccent(color) {
+  if (!color) return;
+  document.documentElement.style.setProperty('--accent', color);
+}
+
+function getTagClass(tag) {
+  const t = tag.toLowerCase();
+  if (t.includes('природн'))  return 'tag-natural';
+  if (t.includes('актив'))    return 'tag-active';
+  if (t.includes('пассив'))   return 'tag-passive';
+  if (t.includes('засекреч') || t.includes('запрещ') || t.includes('[')) return 'tag-warning';
+  return '';
+}
+
+function getStatusClass(status) {
+  const s = status.toUpperCase();
+  if (s.includes('АКТИВ'))  return 'status-active';
+  if (s.includes('ЗАМОР'))  return 'status-frozen';
+  if (s.includes('ОГРАНИЧ')) return 'status-limited';
+  if (s.includes('ЗАСЕКР')) return 'status-classified';
+  return '';
+}
+
+function getResultClass(result) {
+  const r = result.toUpperCase();
+  if (r.includes('НОРМА'))   return 'result-norm';
+  if (r.includes('АНОМАЛ'))  return 'result-anomaly';
+  if (r.includes('ПРЕРВ'))   return 'result-stopped';
+  if (r.includes('СТАБИЛ'))  return 'result-stable';
+  return '';
+}
+
+const MANA_CONFIG = {
+  none:     { cls: 'mana-none',     title: 'Повреждений не выявлено',           icon: '○' },
+  light:    { cls: 'mana-light',    title: 'Лёгкое повреждение манопотока',     icon: '◑' },
+  medium:   { cls: 'mana-medium',   title: 'Среднее повреждение манопотока',    icon: '◕' },
+  heavy:    { cls: 'mana-heavy',    title: 'Тяжёлое повреждение манопотока',    icon: '●' },
+  critical: { cls: 'mana-critical', title: 'КРИТИЧЕСКОЕ повреждение манопотока', icon: '⬤' },
+};
+
+// ── Переключение страниц ─────────────────────────────────────────────
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('btn-profile').classList.toggle('active', page === 'profile');
+  document.getElementById('btn-medical').classList.toggle('active', page === 'medical');
+  document.getElementById('btn-magic').classList.toggle('active', page === 'magic');
+  document.getElementById('btn-relations').classList.toggle('active', page === 'relations');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── РЕНДЕР ПРОФИЛЯ ───────────────────────────────────────────────────
+
+function renderProfile() {
+  const c = character;
+
+  setAccent(c.accent);
+
+  // Header
+  document.getElementById('header-id').textContent = c.employeeId;
+
+  // Eyebrow + имя + позывной
+  document.getElementById('prof-eyebrow').textContent =
+    `${c.clearance} · ${c.division}`;
+  document.getElementById('prof-name').textContent = c.name;
+  document.getElementById('prof-callsign').textContent = `«${c.callsign}»`;
+
+  // Таблица данных
+  const dataFields = [
+    { label: 'Раса',    value: c.race },
+    { label: 'Рост',    value: c.height },
+    { label: 'Вес',     value: c.weight },
+    { label: 'Возраст', value: c.age },
+    { label: 'Статус',  value: c.status, statusClass: getStatusClass(c.status) },
+    { label: 'Допуск',  value: c.clearance },
+    { label: 'Отдел',   value: c.division },
+    { label: 'ID',      value: c.employeeId },
+  ];
+  const grid = document.getElementById('prof-data-grid');
+  grid.innerHTML = dataFields.map(f => `
+    <div class="pdata-cell">
+      <div class="pdata-label">${f.label}</div>
+      <div class="pdata-value ${f.statusClass || ''}">${f.value}</div>
+    </div>
+  `).join('');
+
+  // Плашки
+  const panelDefs = [
+    { label: 'Качество\nманопотока', value: c.panels.manaQuality },
+    { label: 'Вместимость\nИскр',    value: c.panels.iskraCapacity },
+    { label: 'Макс. здоровье',       value: c.panels.resilience },
+    { label: 'Боевой\nрейтинг',      value: c.panels.combatRating },
+  ];
+  document.getElementById('prof-panels').innerHTML = panelDefs.map(p => `
+    <div class="panel-cell">
+      <div class="panel-label">${p.label}</div>
+      <div class="panel-value">${p.value}</div>
+    </div>
+  `).join('');
+
+  // Статы
+  document.getElementById('stats-count').textContent = `×${c.stats.length}`;
+  document.getElementById('stats-list').innerHTML = c.stats.map(s => {
+    const signed = s.value < 0;
+    const pct = signed
+      ? Math.max(0, Math.min(100, ((s.value + s.max) / (s.max * 2)) * 100))
+      : Math.max(0, Math.min(100, (s.value / s.max) * 100));
+    const valClass = s.value > 0 ? 'pos' : s.value < 0 ? 'neg' : '';
+    const valStr   = s.value > 0 ? '+' + s.value : String(s.value);
+    const fillClass = signed && s.value < 0 ? 'negative' : '';
+    return `<div class="stat-row">
+      <span class="stat-label">${s.label}</span>
+      <div class="stat-track"><div class="stat-fill ${fillClass}" style="width:${pct}%"></div></div>
+      <span class="stat-val ${valClass}">${valStr}</span>
+    </div>`;
+  }).join('');
+
+  // Способности
+  document.getElementById('abilities-count').textContent = `×${c.abilities.length}`;
+  document.getElementById('abilities-list').innerHTML = c.abilities.map(ab => `
+    <div class="ability-row">
+      <div class="ability-row-top">
+        <span class="ability-name">${ab.name}</span>
+        <span class="ability-tag ${getTagClass(ab.tag)}">${ab.tag}</span>
+      </div>
+      <div class="ability-desc">${ab.desc}</div>
+    </div>
+  `).join('');
+
+  // Заметки куратора
+  document.getElementById('notes-list').innerHTML = c.notes.map(n => `
+    <div class="note-item">${n}</div>
+  `).join('');
+
+  // Footer
+  document.getElementById('pf-id').textContent =
+    `${c.employeeId} · ${c.name.toUpperCase()} · УРОВЕНЬ ${c.clearance}`;
+}
+
+// ── РЕНДЕР МЕДКАРТЫ ──────────────────────────────────────────────────
+
+function renderMedical() {
+  const m = character.medical;
+
+  // Баннер манопотока
+  const cfg = MANA_CONFIG[m.manaDamage] || MANA_CONFIG['none'];
+  const banner = document.getElementById('mana-banner');
+  banner.className = 'mana-damage-banner ' + cfg.cls;
+  document.getElementById('mana-title').textContent = cfg.title;
+  document.getElementById('mana-icon').textContent  = cfg.icon;
+
+  // Диагнозы
+  const sevLabel = { none: 'Норма', low: 'Лёгкое', mid: 'Умеренное', high: 'Тяжёлое' };
+  document.getElementById('diag-count').textContent = `×${m.diagnoses.length}`;
+  document.getElementById('diagnoses-list').innerHTML = m.diagnoses.map(d => `
+    <div class="diagnosis-item">
+      <div class="diag-severity-bar sev-${d.severity}"></div>
+      <div class="diag-body">
+        <div class="diag-name">${d.name}</div>
+        <div class="diag-desc">${d.desc}</div>
+      </div>
+      <span class="diag-sev-badge badge-${d.severity}">${sevLabel[d.severity] || d.severity}</span>
+    </div>
+  `).join('');
+
+  // История обследований
+  document.getElementById('exam-count').textContent = `×${m.examHistory.length}`;
+  document.getElementById('exam-tbody').innerHTML = m.examHistory.map(e => `
+    <tr>
+      <td style="white-space:nowrap;color:var(--text-dim)">${e.date}</td>
+      <td>${e.type}</td>
+      <td class="${getResultClass(e.result)}">${e.result}</td>
+      <td style="color:var(--text-dim)">${e.note}</td>
+    </tr>
+  `).join('');
+
+  // Ограничения
+  document.getElementById('restr-count').textContent = `×${m.restrictions.length}`;
+  document.getElementById('restrictions-list').innerHTML = m.restrictions.map(r => `
+    <div class="bullet-item">${r}</div>
+  `).join('');
+
+  // Рекомендации
+  document.getElementById('recomm-count').textContent = `×${m.recommendations.length}`;
+  document.getElementById('recommendations-list').innerHTML = m.recommendations.map(r => `
+    <div class="bullet-item">${r}</div>
+  `).join('');
+
+  // Особые пометки
+  document.getElementById('notes-count').textContent = `×${m.specialNotes.length}`;
+  document.getElementById('special-notes-list').innerHTML = m.specialNotes.map(n => `
+    <div class="special-note-item">${n}</div>
+  `).join('');
+
+  // Footer
+  document.getElementById('med-footer-id').textContent =
+    `${character.employeeId} · ${character.name.toUpperCase()} · МЕДИЦИНСКАЯ КАРТА`;
+}
+
+// ── Запуск ───────────────────────────────────────────────────────────
+
+// Возврат в портал — читаем адрес из sessionStorage
+function goToBunker() {
+  // Сохраняем URL профиля, чтобы бункер знал, куда возвращать
+  sessionStorage.setItem('lmn_profile_page', window.location.href);
+  const base = character.bunkerUrl || 'bunker_.html';
+  // Передаём user-ключ и имя персонажа в URL
+  const userKey = 'arren_kain';
+  const name = encodeURIComponent(character.name);
+  window.location.href = base + '?user=' + userKey + '&char=' + name;
+}
+
+function backToPortal() {
+  const portalUrl = sessionStorage.getItem('lmn_portal_page');
+  if (portalUrl && portalUrl !== 'null') {
+    window.location.href = portalUrl;
+  } else {
+    window.location.href = '../index.html';
+  }
+}
+
+
+// ── РЕНДЕР МАГИИ ─────────────────────────────────────────────────────
+
+function getRelationClass(val) {
+  if (val <= 25) return { fill: 'rel-critical', badge: 'rbadge-critical', val: 'rval-critical', label: 'Критическое' };
+  if (val <= 50) return { fill: 'rel-low',      badge: 'rbadge-low',      val: 'rval-low',      label: 'Низкое' };
+  if (val <= 75) return { fill: 'rel-decent',   badge: 'rbadge-decent',   val: 'rval-decent',   label: 'Приемлемое' };
+  return            { fill: 'rel-good',     badge: 'rbadge-good',     val: 'rval-good',     label: 'Хорошее' };
+}
+
+function drawRadar(canvas, stats, accentColor) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const R = Math.min(W, H) / 2 - 52;
+  const keys = Object.keys(stats);
+  const n = keys.length;
+  const labels = {
+    power:     'Сила',
+    speed:     'Скорость',
+    radius:    'Радиус',
+    precision: 'Точность',
+    potential: 'Потенциал',
+    cost:      'Затраты',
+  };
+
+  ctx.clearRect(0, 0, W, H);
+
+  const angleStep = (Math.PI * 2) / n;
+  const startAngle = -Math.PI / 2;
+
+  // Helper: get (x,y) for axis i at fraction t
+  function pt(i, t) {
+    const a = startAngle + i * angleStep;
+    return { x: cx + Math.cos(a) * R * t, y: cy + Math.sin(a) * R * t };
+  }
+
+  // Background grid rings
+  const rings = 5;
+  for (let r = 1; r <= rings; r++) {
+    const t = r / rings;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const p = pt(i, t);
+      i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = r === rings
+      ? 'rgba(180,190,210,0.12)'
+      : 'rgba(180,190,210,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Axis lines
+  for (let i = 0; i < n; i++) {
+    const p = pt(i, 1);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = 'rgba(180,190,210,0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Data polygon — filled
+  ctx.beginPath();
+  keys.forEach((k, i) => {
+    const val = Math.max(0, Math.min(100, stats[k]));
+    const p = pt(i, val / 100);
+    i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+  });
+  ctx.closePath();
+  // fill with accent color semi-transparent
+  const hexToRgb = h => {
+    const r = parseInt(h.slice(1,3),16);
+    const g = parseInt(h.slice(3,5),16);
+    const b = parseInt(h.slice(5,7),16);
+    return `${r},${g},${b}`;
+  };
+  const rgb = hexToRgb(accentColor || '#b08040');
+  ctx.fillStyle = `rgba(${rgb},0.15)`;
+  ctx.fill();
+  ctx.strokeStyle = `rgba(${rgb},0.75)`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Data points
+  keys.forEach((k, i) => {
+    const val = Math.max(0, Math.min(100, stats[k]));
+    const p = pt(i, val / 100);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${rgb},0.9)`;
+    ctx.fill();
+  });
+
+  // Labels
+  const labelR = R + 28;
+  ctx.font = '10px "IBM Plex Mono", monospace';
+  ctx.fillStyle = 'rgba(180,190,210,0.55)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  keys.forEach((k, i) => {
+    const a = startAngle + i * angleStep;
+    const lx = cx + Math.cos(a) * labelR;
+    const ly = cy + Math.sin(a) * labelR;
+    ctx.fillText((labels[k] || k).toUpperCase(), lx, ly);
+  });
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(180,190,210,0.3)';
+  ctx.fill();
+}
+
+
+// ── Вычисление ранга способности ─────────────────────────────────────
+
+function calcMagicRank(stats) {
+  const total = Object.values(stats).reduce((s, v) => s + Math.max(0, Math.min(100, v)), 0);
+
+  let rank, color, glow;
+  if      (total >= 590) { rank = 'S';  color = '#d4a640'; glow = 'rgba(212,166,64,0.35)'; }
+  else if (total >= 570) { rank = 'A+'; color = '#40b864'; glow = 'rgba(64,184,100,0.25)'; }
+  else if (total >= 540) { rank = 'A';  color = '#40b864'; glow = 'rgba(64,184,100,0.2)';  }
+  else if (total >= 500) { rank = 'B+'; color = '#7ab840'; glow = 'rgba(122,184,64,0.2)';  }
+  else if (total >= 460) { rank = 'B';  color = '#7ab840'; glow = 'rgba(122,184,64,0.15)'; }
+  else if (total >= 420) { rank = 'C+'; color = '#c4b830'; glow = 'rgba(196,184,48,0.2)';  }
+  else if (total >= 380) { rank = 'C';  color = '#c4b830'; glow = 'rgba(196,184,48,0.15)'; }
+  else if (total >= 340) { rank = 'D+'; color = '#c48030'; glow = 'rgba(196,128,48,0.15)'; }
+  else if (total >= 300) { rank = 'D';  color = '#c48030'; glow = 'rgba(196,128,48,0.1)';  }
+  else if (total >= 240) { rank = 'E+'; color = '#c05a28'; glow = 'rgba(192,90,40,0.15)';  }
+  else if (total >= 180) { rank = 'E';  color = '#c05a28'; glow = 'rgba(192,90,40,0.1)';   }
+  else if (total >= 120) { rank = 'F+'; color = '#b04040'; glow = 'rgba(176,64,64,0.15)';  }
+  else if (total >= 60)  { rank = 'F';  color = '#b04040'; glow = 'rgba(176,64,64,0.1)';   }
+  else                   { rank = 'F-'; color = '#803030'; glow = 'rgba(128,48,48,0.1)';   }
+
+  return { total, rank, color, glow };
+}
+
+function renderMagic() {
+  const m = magicData;
+  const c = character;
+
+  document.getElementById('radar-ability-name').textContent = m.name;
+  document.getElementById('radar-ability-desc').textContent  = m.description;
+
+  const keys = Object.keys(m.stats);
+  document.getElementById('magic-stat-count').textContent = `×${keys.length}`;
+  document.getElementById('magic-stats-label').textContent = `×${keys.length}`;
+
+  const statLabels = {
+    power:     'Сила',
+    speed:     'Скорость',
+    radius:    'Радиус',
+    precision: 'Точность',
+    potential: 'Потенциал',
+    cost:      'Затраты',
+  };
+
+  document.getElementById('magic-stat-list').innerHTML = keys.map(k => {
+    const val = Math.max(0, Math.min(100, m.stats[k]));
+    const label = statLabels[k] || k;
+    return `<div class="magic-stat-row">
+      <span class="magic-stat-label">${label}</span>
+      <div class="magic-stat-track"><div class="magic-stat-fill" style="width:${val}%"></div></div>
+      <span class="magic-stat-val">${val}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('magic-footer-id').textContent =
+    `${c.employeeId} · ${c.name.toUpperCase()} · МАГИЧЕСКИЙ ПРОФИЛЬ`;
+
+  // Рейтинг способности
+  const rankData = calcMagicRank(m.stats);
+  const rankEl  = document.getElementById('magic-rating-rank');
+  const scoreEl = document.getElementById('magic-rating-score');
+  const blockEl = document.getElementById('magic-rating-block');
+  rankEl.textContent  = rankData.rank;
+  scoreEl.textContent = `${rankData.total} / 600`;
+  blockEl.style.setProperty('--rating-color', rankData.color);
+  blockEl.style.setProperty('--rating-glow',  rankData.glow);
+
+    // Draw radar after DOM is ready
+  requestAnimationFrame(() => {
+    const canvas = document.getElementById('radar-canvas');
+    if (canvas) drawRadar(canvas, m.stats, c.accent || '#b08040');
+  });
+}
+
+// ── РЕНДЕР ОТНОШЕНИЙ ─────────────────────────────────────────────────
+
+function renderRelations() {
+  const rels = relationsData;
+  const c = character;
+
+  document.getElementById('rel-count').textContent = `×${rels.length}`;
+
+  document.getElementById('relations-list').innerHTML = rels.map(r => {
+    const cls = getRelationClass(r.value);
+    const pct = Math.max(0, Math.min(100, r.value));
+    return `<div class="relation-item">
+      <span class="relation-name">${r.name}</span>
+      <div class="relation-track"><div class="relation-fill ${cls.fill}" style="width:${pct}%"></div></div>
+      <span class="relation-value ${cls.val}">${r.value}</span>
+      <span class="relation-badge ${cls.badge}">${cls.label}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rel-footer-id').textContent =
+    `${c.employeeId} · ${c.name.toUpperCase()} · СОЦИАЛЬНЫЙ ПРОФИЛЬ`;
+}
+
+renderProfile();
+renderMedical();
+renderMagic();
+renderRelations();
+
+</script>
+</body>
+</html>
